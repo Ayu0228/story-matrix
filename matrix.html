@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>灵感方向 · 灵感矩阵</title>
-<link rel="stylesheet" href="assets/style.css?v=6">
+<link rel="stylesheet" href="assets/style.css?v=7">
 <style>
 /* 矩阵页专属 */
 .crumbs{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:26px;flex-wrap:wrap;min-height:22px}
@@ -71,9 +71,9 @@
   <div class="sr-foot"><span>↑↓ 移动</span><span>↵ 跳过去</span><span>+ 直接入配方</span><span>esc 关闭</span></div>
 </div>
 
-<script src="assets/data.js?v=6"></script>
-<script src="assets/common.js?v=6"></script>
-<script src="assets/cloud.js?v=6"></script>
+<script src="assets/data.js?v=7"></script>
+<script src="assets/common.js?v=7"></script>
+<script src="assets/cloud.js?v=7"></script>
 <script>
 initPage('matrix.html');
 const stage=$('#stage'),crumbs=$('#crumbs');
@@ -97,30 +97,45 @@ crumbs.addEventListener('click',e=>{
 });
 
 /* ---------- 第一层：灵感方向（按"和谁的事"分组） ---------- */
+const domCard=d=>{
+  const i=DOMAINS.indexOf(d);
+  const n=flatSits(d).length;
+  const samp=d.tree.length?(d.tree[0].tags?d.tree[0].tags.slice(0,2).join(' · '):(d.tree[0].groups?d.tree[0].groups[0].tags.slice(0,2).join(' · '):'')):'还没有内容';
+  return `<div class="card dom-card rip" data-dom="${d.id}">
+    <span class="idx">${String(i+1).padStart(2,'0')}</span>
+    <h3>${esc(d.name)}</h3>
+    <div class="cnt">${d.tree.length} 类 · ${n} 个情境</div>
+    <div class="samp">${esc(samp)}…</div>
+    <span class="crud">
+      <button data-ed-dom="${d.id}" title="重命名方向">✎</button>
+      <button data-dd-dom="${d.id}" class="del" title="删除方向">✕</button>
+    </span>
+  </div>`;
+};
 function renderDomGrid(){
   renderCrumbs();
+  const grouped=new Set(GROUPS.flatMap(g=>g.ids));
+  const mine=DOMAINS.filter(d=>!grouped.has(d.id));
   stage.innerHTML=GROUPS.map(g=>`
     <div class="rise" style="margin-bottom:26px">
       <div class="grp-name" style="margin:24px 0 14px">${g.name}</div>
-      <div class="dom-grid">${g.ids.map(id=>{
-        const d=DOMAINS.find(x=>x.id===id),i=DOMAINS.indexOf(d);
-        const n=flatSits(d).length;
-        const samp=d.tree[0].tags?d.tree[0].tags.slice(0,2).join(' · '):(d.tree[0].groups[0].tags.slice(0,2).join(' · '));
-        return `<div class="card dom-card rip" data-dom="${d.id}">
-          <span class="idx">${String(i+1).padStart(2,'0')}</span>
-          <h3>${d.name}</h3>
-          <div class="cnt">${d.tree.length} 类 · ${n} 个情境</div>
-          <div class="samp">${samp}…</div>
-        </div>`;}).join('')}</div>
-    </div>`).join('');
+      <div class="dom-grid">${g.ids.map(id=>domCard(DOMAINS.find(x=>x.id===id))).join('')}</div>
+    </div>`).join('')
+    +(mine.length?`<div class="rise" style="margin-bottom:26px">
+      <div class="grp-name" style="margin:24px 0 14px">我的方向</div>
+      <div class="dom-grid">${mine.map(domCard).join('')}</div>
+    </div>`:'')
+    +`<div class="rise"><div class="dom-grid">
+      <div class="card dom-card add-card rip" data-adddom="1"><h3 style="font-size:17px">＋ 新建方向</h3><div class="cnt">创建你自己的灵感方向</div></div>
+    </div></div>`;
   stagger();
 }
 stage.addEventListener('click',e=>{
-  if(e.target.closest('.mine-del'))return; // 删除按钮走 document 层处理器
+  if(e.target.closest('.crud')||e.target.closest('.grp-add')||e.target.closest('.add-card'))return; // 编辑按钮走 document 层
   const c=e.target.closest('.dom-card');
   if(c){sel.dom=c.dataset.dom;sel.l1=null;renderL1();}
   const l=e.target.closest('.l1-card');
-  if(l){sel.l1=+l.dataset.l1;renderL2();}
+  if(l&&l.dataset.l1!==undefined){sel.l1=+l.dataset.l1;renderL2();}
 });
 
 /* ---------- 第二层：大类 ---------- */
@@ -132,8 +147,14 @@ function renderL1(){
     <p class="rise in" style="color:var(--dimmer);font-size:12.5px;letter-spacing:.1em;margin-bottom:16px">${d.name} · ${d.tree.length} 类 · ${total} 个情境</p>
     <div class="l1-rail">${d.tree.map((n,i)=>{
       const cnt=n.tags?n.tags.length:n.groups.reduce((s,g)=>s+g.tags.length,0);
-      return `<div class="card l1-card rise rip" data-l1="${i}"><span class="n">${String(i+1).padStart(2,'0')} · ${cnt} 个</span>${n.l1}</div>`;
-    }).join('')}</div>
+      return `<div class="card l1-card rise rip" data-l1="${i}"><span class="n">${String(i+1).padStart(2,'0')} · ${cnt} 个</span>${esc(n.l1)}
+        <span class="crud">
+          <button data-ec="${i}" title="重命名分类">✎</button>
+          <button data-dc="${i}" class="del" title="删除分类">✕</button>
+        </span></div>`;
+    }).join('')}
+      <div class="card l1-card add-card rip" data-addcat="1" style="display:grid;place-items:center;min-width:110px"><span style="font-size:14px;font-weight:700">＋ 新建分类</span></div>
+    </div>
     <div id="l2box"></div>`;
   stagger();
 }
@@ -142,40 +163,144 @@ function renderL1(){
 function renderL2(){
   renderCrumbs();
   const d=DOMAINS.find(x=>x.id===sel.dom),n=d.tree[sel.l1];
-  const chip=(t,grp)=>`<span class="chip rip" data-add="sit" data-tag="${esc(t)}" data-dom="${d.name}">
-    <span class="plus">+</span>${esc(t)}${grp?` <span class="src">${esc(grp)}</span>`:''}</span>`;
+  if(!n){sel.l1=null;renderL1();return;}
+  const sitCrud=t=>`<span class="crud">
+      <button data-es="${encodeURIComponent(t)}" title="重命名情境">✎</button>
+      <button data-sd="${encodeURIComponent(t)}" class="del" title="删除情境">✕</button>
+    </span>`;
+  const chip=(t,grp)=>`<span class="chip rip" data-add="sit" data-tag="${esc(t)}" data-dom="${esc(d.name)}"${grp?` data-grp="${esc(grp)}"`:''}>
+    <span class="plus">+</span>${esc(t)}${grp?` <span class="src">${esc(grp)}</span>`:''}${sitCrud(t)}</span>`;
+  const grpAdd=grp=>`<button class="grp-add" data-gs="${esc(grp||'')}">＋ 加情境</button>`;
   let inner='';
-  if(n.tags)inner=`<div class="chip-cloud">${n.tags.map(t=>chip(t)).join('')}</div>`;
-  else inner=n.groups.map(g=>`<div class="grp-name">${g.name}</div><div class="chip-cloud">${g.tags.map(t=>chip(t,g.name)).join('')}</div>`).join('');
-  const side=(title,color,html)=>html?`<div class="grp-name" style="margin-top:18px;color:${color}">${title}</div><div class="chip-cloud">${html}</div>`:'';
-  const mineChip=cat=>x=>`<span class="chip mine rip" data-add="${cat}" data-tag="${esc(x.tag)}" data-dom="${d.name}">
-    <span class="plus">+</span>${esc(x.tag)}<span class="mine-tag">自定义</span><button class="mine-del" data-k="${cat}" data-del="${encodeURIComponent(x.tag)}‖${encodeURIComponent(x.l1)}" title="删除">×</button></span>`;
-  const relInner=(RELS[n.l1]||[]).map(t=>`<span class="chip rip" data-add="rel" data-tag="${esc(t)}" data-dom="${d.name}"><span class="plus">+</span>${esc(t)}</span>`).join('')
-    +SMCloud.data.rels.filter(x=>x.l1===n.l1).map(mineChip('rel')).join('');
-  const scInner=(SCENES[n.l1]||[]).map(t=>`<span class="chip rip" data-add="scene" data-tag="${esc(t)}" data-dom="${d.name}"><span class="plus">+</span>${esc(t)}</span>`).join('')
-    +SMCloud.data.scenes.filter(x=>x.l1===n.l1).map(mineChip('scene')).join('');
+  if(n.tags)inner=`<div class="chip-cloud">${n.tags.map(t=>chip(t)).join('')||'<span class="empty-hint">还没有情境，点上方「＋ 加情境」</span>'}</div>`;
+  else inner=n.groups.map(g=>`<div class="grp-name">${esc(g.name)}${grpAdd(g.name)}</div><div class="chip-cloud">${g.tags.map(t=>chip(t,g.name)).join('')}</div>`).join('');
+  const itemChip=cat=>t=>{
+    const custom=cat==='rel'?!isBuiltinRel(n.l1,t):!isBuiltinScene(n.l1,t);
+    return `<span class="chip ${custom?'mine':''} rip" data-add="${cat}" data-tag="${esc(t)}" data-dom="${esc(d.name)}">
+      <span class="plus">+</span>${esc(t)}${custom?'<span class="mine-tag">自定义</span>':''}
+      <span class="crud">
+        <button data-ei="${cat}" data-t="${encodeURIComponent(t)}" title="重命名">✎</button>
+        <button data-di="${cat}" data-t="${encodeURIComponent(t)}" class="del" title="删除">✕</button>
+      </span></span>`;
+  };
+  const side=(title,color,cat)=>{
+    const arr=cat==='rel'?(RELS[n.l1]||[]):(SCENES[n.l1]||[]);
+    return `<div class="grp-name" style="margin-top:18px;color:${color}">${title}<button class="grp-add" data-ga="${cat}">＋ 新增</button></div>
+      <div class="chip-cloud">${arr.map(itemChip(cat)).join('')||'<span class="empty-hint" style="padding:10px 0;font-size:12.5px">还没有，点「＋ 新增」添加</span>'}</div>`;
+  };
   $('#l2box').innerHTML=`<div class="sit-panel rise in" style="animation:riseIn .5s var(--ease) both">
-    <div class="grp-name" style="margin-top:6px">「${esc(n.l1)}」 · 点 + 收进配方</div>${inner}
-    ${side('适合的人物关系','#7dd3fc',relInner)}${side('适合的故事场景','#6ee7b7',scInner)}</div>`;
+    <div class="grp-name" style="margin-top:6px">「${esc(n.l1)}」 · 点 + 收进配方${grpAdd('')}</div>${inner}
+    ${side('适合的人物关系','#7dd3fc','rel')}${side('适合的故事场景','#6ee7b7','scene')}</div>`;
 }
 
-/* ---------- 点击 + 入配方 / 删除自定义 ---------- */
+/* ---------- 点击 + 入配方 ---------- */
 document.addEventListener('click',e=>{
-  const md=e.target.closest('.mine-del');
-  if(md){
-    e.stopPropagation();
-    const [tag,l1]=md.dataset.del.split('‖').map(decodeURIComponent);
-    const ok=md.dataset.k==='rel'?SMCloud.delRel(tag,l1):SMCloud.delScene(tag,l1);
-    if(ok){toast('已删除');if(sel.l1!=null)renderL2();renderDockStates();}
-    return;
-  }
+  if(e.target.closest('.crud')||e.target.closest('.grp-add')||e.target.closest('.add-card'))return; // 编辑按钮走 CRUD 处理器
   const a=e.target.closest('[data-add]');
   if(!a)return;
   quickAdd({cat:a.dataset.add,tag:a.dataset.tag,dom:a.dataset.dom});
   a.classList.add('have');
   renderDockStates();
 });
-SMCloud.onData(()=>{if(sel.l1!=null)renderL2();renderDockStates();});
+
+/* ---------- 全体系增删改（数据存你的私有仓库） ---------- */
+const guard=async()=>{if(await SMCloud.ensureConnected())return true;toast('请先连接存储（右上角「存储」按钮）');return false;};
+const curDom=()=>DOMAINS.find(x=>x.id===sel.dom);
+const curCat=()=>{const d=curDom();return d&&sel.l1!=null?d.tree[sel.l1]:null;};
+const nameModal=(title,label,val,ph,onSave)=>SMCloud.openModal({
+  title,okText:'保存',
+  body:`<label class="sm-field"><span>${label}</span><input id="smIn" value="${esc(val||'')}" placeholder="${esc(ph||'')}" autocomplete="off"></label>`,
+  onOk:m=>{const v=m.querySelector('#smIn').value.trim();if(!v)return false;onSave(v);}
+});
+document.addEventListener('click',async e=>{
+  const q=s=>e.target.closest(s);let m;
+  /* ===== 方向 ===== */
+  if(m=q('[data-adddom]')){
+    if(!(await guard()))return;
+    nameModal('新建方向','方向名称','','例如：科幻、悬疑、复仇…',v=>{SMCloud.addDom(v);toast('方向已创建，点进去添加分类吧');});
+  }
+  else if(m=q('[data-ed-dom]')){
+    if(!(await guard()))return;
+    const d=DOMAINS.find(x=>x.id===m.dataset.edDom);if(!d)return;
+    nameModal('重命名方向','方向名称',d.name,'',v=>{SMCloud.renameDom(d.id,v);toast('已改名');});
+  }
+  else if(m=q('[data-dd-dom]')){
+    if(!(await guard()))return;
+    const d=DOMAINS.find(x=>x.id===m.dataset.ddDom);if(!d)return;
+    const nSit=flatSits(d).length;
+    SMCloud.openModal({title:'删除方向',okText:'确认删除',
+      body:`<p class="sm-tip">将永久删除方向「<b>${esc(d.name)}</b>」下的 <b>${d.tree.length}</b> 个分类、<b>${nSit}</b> 个情境，以及该方向所有的人物关系、场景。此操作不可恢复。</p>`,
+      onOk:()=>{const r=SMCloud.delDom(d.id);toast(`已删除（连带 ${r.cats} 个分类、${r.sits} 个情境）`);if(sel.dom===d.id){sel.dom=null;sel.l1=null;}}});
+  }
+  /* ===== 分类 ===== */
+  else if(m=q('[data-addcat]')){
+    if(!(await guard()))return;
+    nameModal('新建分类','分类名称','','例如：误会、重逢、和解…',v=>{SMCloud.addCat(sel.dom,v);toast('分类已创建，点它添加情境');});
+  }
+  else if(m=q('[data-ec]')){
+    if(!(await guard()))return;
+    const n=curDom().tree[+m.dataset.ec];
+    nameModal('重命名分类','分类名称',n.l1,'',v=>{SMCloud.renameCat(sel.dom,n.l1,v);toast('已改名，关系/场景归属已同步');});
+  }
+  else if(m=q('[data-dc]')){
+    if(!(await guard()))return;
+    const i=+m.dataset.dc,n=curDom().tree[i];
+    SMCloud.openModal({title:'删除分类',okText:'确认删除',
+      body:`<p class="sm-tip">将永久删除分类「<b>${esc(n.l1)}</b>」及其 <b>${(n.tags?n.tags.length:0)+(n.groups?n.groups.reduce((s,g)=>s+g.tags.length,0):0)}</b> 个情境，该分类下的人物关系、场景一并删除。此操作不可恢复。</p>`,
+      onOk:()=>{SMCloud.delCat(sel.dom,n.l1);toast('已删除');if(sel.l1===i)sel.l1=null;}});
+  }
+  /* ===== 情境 ===== */
+  else if(m=q('[data-gs]')){
+    if(!(await guard()))return;
+    const n=curCat(),grp=m.dataset.gs;
+    nameModal(grp?`加情境到「${grp}」`:'加情境','情境名称','','例如：深夜加班只剩我们两人…',v=>{SMCloud.addSit(sel.dom,n.l1,v,grp||undefined);toast('已添加');});
+  }
+  else if(m=q('[data-es]')){
+    if(!(await guard()))return;
+    const n=curCat(),oldT=decodeURIComponent(m.dataset.es);
+    nameModal('重命名情境','情境名称',oldT,'',v=>{SMCloud.renameSit(sel.dom,n.l1,oldT,v);toast('已改名');});
+  }
+  else if(m=q('[data-sd]')){
+    if(!(await guard()))return;
+    const n=curCat(),t=decodeURIComponent(m.dataset.sd);
+    SMCloud.openModal({title:'删除情境',okText:'确认删除',
+      body:`<p class="sm-tip">将永久删除情境「<b>${esc(t)}</b>」。此操作不可恢复。</p>`,
+      onOk:()=>{SMCloud.delSit(sel.dom,n.l1,t);toast('已删除');}});
+  }
+  /* ===== 人物关系 / 场景 ===== */
+  else if(m=q('[data-ga]')){
+    if(!(await guard()))return;
+    const n=curCat(),cat=m.dataset.ga;
+    nameModal(cat==='rel'?'新增人物关系':'新增故事场景',cat==='rel'?'关系描述':'场景描述','',
+      cat==='rel'?'例如：互相看不顺眼却必须合作':'例如：凌晨的便利店…',
+      v=>{cat==='rel'?SMCloud.addRel(v,n.l1):SMCloud.addScene(v,n.l1);toast('已添加');});
+  }
+  else if(m=q('[data-ei]')){
+    if(!(await guard()))return;
+    const n=curCat(),cat=m.dataset.ei,oldT=decodeURIComponent(m.dataset.t);
+    nameModal(cat==='rel'?'重命名人物关系':'重命名故事场景',cat==='rel'?'关系描述':'场景描述',oldT,'',
+      v=>{cat==='rel'?SMCloud.renameRel(n.l1,oldT,v):SMCloud.renameScene(n.l1,oldT,v);toast('已改名');});
+  }
+  else if(m=q('[data-di]')){
+    if(!(await guard()))return;
+    const n=curCat(),cat=m.dataset.di,t=decodeURIComponent(m.dataset.t);
+    SMCloud.openModal({title:cat==='rel'?'删除人物关系':'删除故事场景',okText:'确认删除',
+      body:`<p class="sm-tip">将永久删除「<b>${esc(t)}</b>」。此操作不可恢复。</p>`,
+      onOk:()=>{cat==='rel'?SMCloud.delRel(t,n.l1):SMCloud.delScene(t,n.l1);toast('已删除');}});
+  }
+});
+/* 云端数据变化 → 按当前浏览位置全量重渲染 */
+SMCloud.onData(()=>{
+  if(sel.dom&&!DOMAINS.some(d=>d.id===sel.dom)){sel.dom=null;sel.l1=null;renderDomGrid();}
+  else if(sel.l1!=null){
+    const d=curDom();
+    if(!d||sel.l1>=d.tree.length){sel.l1=null;renderL1();}
+    else{renderL1();renderL2();}
+  }
+  else if(sel.dom)renderL1();
+  else renderDomGrid();
+  renderDockStates();
+});
 function renderDockStates(){
   const pf=loadPF();
   $$('[data-add]').forEach(el=>{
@@ -197,16 +322,6 @@ function buildIndex(){
   MODIFIERS.forEach(t=>INDEX.push({t,dom:'转折词',cat:'mod'}));
   DOMAINS.forEach(d=>d.tree.forEach((n,i)=>{(RELS[n.l1]||[]).forEach(t=>INDEX.push({t,dom:d.name,domId:d.id,l1:i,grp:n.l1,cat:'rel'}));}));
   DOMAINS.forEach(d=>d.tree.forEach((n,i)=>{(SCENES[n.l1]||[]).forEach(t=>INDEX.push({t,dom:d.name,domId:d.id,l1:i,grp:n.l1,cat:'scene'}));}));
-  SMCloud.data.rels.forEach(x=>{
-    const d=DOMAINS.find(dd=>dd.name===L1_DOM[x.l1]);if(!d)return;
-    const i=d.tree.findIndex(n=>n.l1===x.l1);if(i<0)return;
-    INDEX.push({t:x.tag,dom:d.name,domId:d.id,l1:i,grp:x.l1,cat:'rel'});
-  });
-  SMCloud.data.scenes.forEach(x=>{
-    const d=DOMAINS.find(dd=>dd.name===L1_DOM[x.l1]);if(!d)return;
-    const i=d.tree.findIndex(n=>n.l1===x.l1);if(i<0)return;
-    INDEX.push({t:x.tag,dom:d.name,domId:d.id,l1:i,grp:x.l1,cat:'scene'});
-  });
 }
 buildIndex();
 SMCloud.ready.then(buildIndex);

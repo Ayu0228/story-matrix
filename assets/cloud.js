@@ -3,14 +3,42 @@
    统一保存在用户自己的 GitHub 私有仓库 story-matrix-data.json 中。
    访问令牌只保存在本机浏览器 localStorage，从不外传。 */
 (function(){
-const LS_CFG='sm_cloud_cfg',FILE='story-matrix-data.json';
+const LS_CFG='sm_cloud_cfg',LS_TOK='sm_cloud_tok',SS_TOK='sm_cloud_tok',FILE='story-matrix-data.json';
 let cfg=null,data=null,sha=null,state='off',busyMsg='',saveTimer=null,saving=false,dirty=false;
 const stateFns=[],dataFns=[];
 const apiBase=()=>window.SM_API_BASE||'https://api.github.com';
-function blank(){return {v:1,rels:[],scenes:[],saved:[],pf:[]};}
-function norm(){data=Object.assign(blank(),data||{});['rels','scenes','saved','pf'].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[];});}
-function loadCfg(){try{cfg=JSON.parse(localStorage.getItem(LS_CFG)||'null');}catch(e){cfg=null;}}
-function persistCfg(){if(cfg&&cfg.owner&&cfg.repo&&cfg.token)localStorage.setItem(LS_CFG,JSON.stringify(cfg));else localStorage.removeItem(LS_CFG);}
+function blank(){return {v:2,tax:null,rels:[],scenes:[],saved:[],pf:[]};}
+function norm(){
+  data=Object.assign(blank(),data||{});
+  ['rels','scenes','saved','pf'].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[];});
+  // v1 → v2 / 首次使用：以内置数据为底本，全量迁入私有仓库（含历史自定义条目）
+  if(!Array.isArray(data.tax)||!data.tax.length){
+    if(typeof BUILTIN!=='undefined'){
+      data.tax=JSON.parse(JSON.stringify(BUILTIN.doms));
+      const baseRels=[];Object.entries(BUILTIN.rels).forEach(([l1,a])=>a.forEach(t=>baseRels.push({tag:t,l1})));
+      data.rels=baseRels.concat(data.rels.filter(x=>!(BUILTIN.rels[x.l1]||[]).includes(x.tag)));
+      const baseScenes=[];Object.entries(BUILTIN.scenes).forEach(([l1,a])=>a.forEach(t=>baseScenes.push({tag:t,l1})));
+      data.scenes=baseScenes.concat(data.scenes.filter(x=>!(BUILTIN.scenes[x.l1]||[]).includes(x.tag)));
+    }else data.tax=[];
+    data.v=2;
+  }
+}
+function loadCfg(){
+  try{cfg=JSON.parse(localStorage.getItem(LS_CFG)||'null');}catch(e){cfg=null;}
+  if(cfg&&cfg.owner&&cfg.repo){
+    cfg.token=sessionStorage.getItem(SS_TOK)||localStorage.getItem(LS_TOK)||'';
+    if(!cfg.token)cfg=null; // 令牌已随浏览器关闭清除，等待重新粘贴
+  }
+}
+function persistCfg(remember){
+  if(cfg&&cfg.owner&&cfg.repo){
+    localStorage.setItem(LS_CFG,JSON.stringify({owner:cfg.owner,repo:cfg.repo}));
+    if(cfg.token){
+      if(remember){localStorage.setItem(LS_TOK,cfg.token);sessionStorage.removeItem(SS_TOK);}
+      else{sessionStorage.setItem(SS_TOK,cfg.token);localStorage.removeItem(LS_TOK);}
+    }
+  }else{localStorage.removeItem(LS_CFG);localStorage.removeItem(LS_TOK);sessionStorage.removeItem(SS_TOK);}
+}
 function b64u(s){return btoa(unescape(encodeURIComponent(s)));}
 function u64b(s){return decodeURIComponent(escape(atob(s.replace(/\n/g,''))));}
 function setState(s,msg){state=s;busyMsg=msg||'';stateFns.forEach(f=>f(s,busyMsg));}
@@ -59,7 +87,9 @@ async function flushSave(){
     else{setState('err',e.message);toast('同步失败：'+e.message);}
   }finally{saving=false;if(dirty){dirty=false;queueSave();}}
 }
-function touch(){queueSave();}
+function touch(){dirty=true;queueSave();}
+/* 关页时若有未同步修改，立即冲刷（浏览器通常仍会让请求完成） */
+addEventListener('pagehide',()=>{if(!cfg||!data||!dirty)return;clearTimeout(saveTimer);flushSave();});
 
 /* ---------- 对外业务接口 ---------- */
 const api={
@@ -67,23 +97,105 @@ const api={
   get state(){return state;},
   get ready(){return readyP;},
   onState,onData,
-  async connect(c){
+  async connect(c,remember){
     c={owner:(c.owner||'').trim(),repo:(c.repo||'').trim(),token:(c.token||'').trim()};
     if(!c.owner||!c.repo||!c.token)throw new Error('请填写完整：用户名、仓库名、令牌');
     setState('busy','正在验证连接…');
     const info=await testCfg(c);
-    cfg=c;persistCfg();await load();
+    cfg=c;persistCfg(remember);await load();
     return info;
   },
-  disconnect(){cfg=null;persistCfg();sha=null;data=blank();setState('off');emit();},
+  disconnect(){cfg=null;persistCfg();localStorage.removeItem(LS_TOK);sessionStorage.removeItem(SS_TOK);sha=null;data=blank();setState('off');emit();},
   async ensureConnected(){
     if(cfg&&state==='ok')return true;
     openConnectModal();return false;
   },
   addRel(tag,l1){norm();if(!data.rels.some(x=>x.tag===tag&&x.l1===l1)){data.rels.push({tag,l1});touch();emit();return true;}return false;},
   delRel(tag,l1){norm();const n=data.rels.length;data.rels=data.rels.filter(x=>!(x.tag===tag&&x.l1===l1));if(data.rels.length!==n){touch();emit();return true;}return false;},
+  renameRel(l1,oldT,newT){norm();const x=data.rels.find(x=>x.tag===oldT&&x.l1===l1);if(!x)throw new Error('要修改的关系不存在');if(data.rels.some(y=>y.tag===newT&&y.l1===l1&&y!==x))throw new Error('该分类下已有同名关系');x.tag=newT;touch();emit();return true;},
   addScene(tag,l1){norm();if(!data.scenes.some(x=>x.tag===tag&&x.l1===l1)){data.scenes.push({tag,l1});touch();emit();return true;}return false;},
   delScene(tag,l1){norm();const n=data.scenes.length;data.scenes=data.scenes.filter(x=>!(x.tag===tag&&x.l1===l1));if(data.scenes.length!==n){touch();emit();return true;}return false;},
+  renameScene(l1,oldT,newT){norm();const x=data.scenes.find(x=>x.tag===oldT&&x.l1===l1);if(!x)throw new Error('要修改的场景不存在');if(data.scenes.some(y=>y.tag===newT&&y.l1===l1&&y!==x))throw new Error('该分类下已有同名场景');x.tag=newT;touch();emit();return true;},
+
+  /* ---------- 方向 / 分类 / 情境 CRUD（数据全量在云） ---------- */
+  _dom(id){const d=data.tax.find(d=>d.id===id);if(!d)throw new Error('方向不存在（可能已被删除）');return d;},
+  _cat(domId,l1){const d=this._dom(domId);const n=d.tree.find(n=>n.l1===l1);if(!n)throw new Error('分类不存在（可能已被删除）');return {d,n};},
+  _catTaken(l1,exceptDom){return data.tax.some(d=>d.id!==exceptDom&&d.tree.some(n=>n.l1===l1));},
+  addDom(name){
+    norm();name=(name||'').trim();
+    if(!name)throw new Error('请填写方向名称');
+    if(data.tax.some(d=>d.name===name))throw new Error('已有同名方向');
+    const id='u'+Date.now().toString(36);
+    data.tax.push({id,name,tree:[]});touch();emit();return id;
+  },
+  renameDom(id,name){
+    norm();name=(name||'').trim();
+    if(!name)throw new Error('请填写方向名称');
+    if(data.tax.some(d=>d.id!==id&&d.name===name))throw new Error('已有同名方向');
+    this._dom(id).name=name;touch();emit();return true;
+  },
+  delDom(id){
+    norm();const d=this._dom(id);
+    const cats=d.tree.map(n=>n.l1);
+    const nSit=d.tree.reduce((s,n)=>s+(n.tags?n.tags.length:0)+(n.groups?n.groups.reduce((a,g)=>a+g.tags.length,0):0),0);
+    data.rels=data.rels.filter(x=>!cats.includes(x.l1));
+    data.scenes=data.scenes.filter(x=>!cats.includes(x.l1));
+    data.tax=data.tax.filter(x=>x.id!==id);
+    touch();emit();return {cats:cats.length,sits:nSit};
+  },
+  addCat(domId,l1){
+    norm();l1=(l1||'').trim();
+    if(!l1)throw new Error('请填写分类名称');
+    if(this._catTaken(l1,domId))throw new Error('这个分类名已被其他方向使用，换一个');
+    this._dom(domId).tree.push({l1,tags:[]});touch();emit();return true;
+  },
+  renameCat(domId,oldL1,newL1){
+    norm();newL1=(newL1||'').trim();
+    if(!newL1)throw new Error('请填写分类名称');
+    if(this._catTaken(newL1,domId))throw new Error('这个分类名已被其他方向使用，换一个');
+    const {n}=this._cat(domId,oldL1);n.l1=newL1;
+    // 关系/场景归属跟随改名（情境标签不带分类名，无需处理）
+    data.rels.forEach(x=>{if(x.l1===oldL1)x.l1=newL1;});
+    data.scenes.forEach(x=>{if(x.l1===oldL1)x.l1=newL1;});
+    touch();emit();return true;
+  },
+  delCat(domId,l1){
+    norm();const {d,n}=this._cat(domId,l1);
+    const nSit=(n.tags?n.tags.length:0)+(n.groups?n.groups.reduce((a,g)=>a+g.tags.length,0):0);
+    const nRel=data.rels.filter(x=>x.l1===l1).length;
+    const nScene=data.scenes.filter(x=>x.l1===l1).length;
+    d.tree=d.tree.filter(x=>x.l1!==l1);
+    data.rels=data.rels.filter(x=>x.l1!==l1);
+    data.scenes=data.scenes.filter(x=>x.l1!==l1);
+    touch();emit();return {sits:nSit,rels:nRel,scenes:nScene};
+  },
+  addSit(domId,l1,tag,grp){
+    norm();tag=(tag||'').trim();
+    if(!tag)throw new Error('请填写情境名称');
+    const {n}=this._cat(domId,l1);
+    const all=n.tags?n.tags.slice():(n.groups?n.groups.reduce((a,g)=>a.concat(g.tags),[]):[]);
+    if(all.includes(tag))throw new Error('该分类下已有同名情境');
+    if(n.groups){const g=n.groups.find(g=>g.name===grp)||n.groups[0];g.tags.push(tag);}
+    else{if(!n.tags)n.tags=[];n.tags.push(tag);}
+    touch();emit();return true;
+  },
+  renameSit(domId,l1,oldT,newT){
+    norm();newT=(newT||'').trim();
+    if(!newT)throw new Error('请填写情境名称');
+    const {n}=this._cat(domId,l1);
+    let holder=n.tags||null;
+    if(!holder&&n.groups){const g=n.groups.find(g=>g.tags.includes(oldT));holder=g?g.tags:null;}
+    if(!holder||!holder.includes(oldT))throw new Error('要修改的情境不存在');
+    if(holder.includes(newT)&&newT!==oldT)throw new Error('该分类下已有同名情境');
+    holder[holder.indexOf(oldT)]=newT;touch();emit();return true;
+  },
+  delSit(domId,l1,tag){
+    norm();const {n}=this._cat(domId,l1);
+    let hit=false;
+    if(n.tags){const i=n.tags.indexOf(tag);if(i>=0){n.tags.splice(i,1);hit=true;}}
+    if(n.groups)n.groups.forEach(g=>{const i=g.tags.indexOf(tag);if(i>=0){g.tags.splice(i,1);hit=true;}});
+    if(hit){touch();emit();return true;}return false;
+  },
   saveSaved(sv){norm();data.saved=sv;touch();},
   savePF(pf){norm();data.pf=pf;touch();},
   isOn(){return !!cfg&&state==='ok';}
@@ -136,16 +248,21 @@ function openConnectModal(){
       ${has?`<p class="sm-tip sm-ok">当前已连接：${cfg.owner}/${cfg.repo}</p>`:''}
       <label class="sm-field"><span>GitHub 用户名</span><input id="smOwner" value="${c.owner||''}" placeholder="例如 zhangsan"></label>
       <label class="sm-field"><span>私有仓库名</span><input id="smRepo" value="${c.repo||''}" placeholder="例如 my-story-data"></label>
-      <label class="sm-field"><span>访问令牌（Fine-grained token）</span><input id="smToken" type="password" value="${c.token||''}" placeholder="只授权该私有仓库 Contents 读写"></label>
-      ${has?`<button class="btn btn-ghost btn-sm rip" id="smDis" style="margin-top:6px">断开连接</button>`:''}
+      <label class="sm-field"><span>访问令牌（Fine-grained token）</span><input id="smToken" type="password" value="${c.token||''}" placeholder="只授权该私有仓库 Contents 读写" autocomplete="off"></label>
+      <label style="display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--dim);margin:2px 0 4px;cursor:pointer;user-select:none">
+        <input type="checkbox" id="smRem" ${localStorage.getItem(LS_TOK)?'checked':''} style="accent-color:#a78bfa;width:15px;height:15px">
+        在这台设备上记住令牌（不勾选则关闭浏览器后自动清除，下次需重新粘贴）
+      </label>
+      ${has?`<button class="btn btn-ghost btn-sm rip" id="smDis" style="margin-top:6px">断开连接并清除本机令牌</button>`:''}
       ${has?'':`<a class="sm-help" href="https://docs.github.com/zh/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens" target="_blank" rel="noopener">不知道怎么生成令牌？点这里看官方教程 ↗</a>`}
     `,
     onOk:async(mask)=>{
       const errEl=$('#smErr');if(errEl)errEl.remove();
       const nc={owner:mask.querySelector('#smOwner').value,repo:mask.querySelector('#smRepo').value,token:mask.querySelector('#smToken').value};
+      const remember=!!mask.querySelector('#smRem')?.checked;
       try{
-        const info=await api.connect(nc);
-        toast('已连接：'+(info.full_name||nc.repo));
+        const info=await api.connect(nc,remember);
+        toast(remember?'已连接：'+(info.full_name||nc.repo):'已连接（令牌未在本机长期保存，关闭浏览器后需重新粘贴）');
         return true;
       }catch(e){showModalErr(e.message);return false;}
     }
@@ -175,4 +292,6 @@ loadCfg();
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',injectCloudBtn);
 else injectCloudBtn();
 const readyP=load();
+/* 数据层联动：云数据变化时先重建运行时结构（applyTax 由 data.js 提供），页面渲染回调后执行 */
+if(typeof applyTax==='function'){readyP.then(applyTax);api.onData(applyTax);}
 })();

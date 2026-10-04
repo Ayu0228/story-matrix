@@ -1,5 +1,5 @@
 const MODIFIERS=['背叛','和解','牺牲','亏欠','送别','重逢','错过','成全','救赎','报复'];
-const DOMAINS=[
+let DOMAINS=[
 {id:'aiqing',name:'爱情',tree:[
  {l1:'单相思',tags:['暗恋','遥望着的人','擦肩过一次']},
  {l1:'邂逅',tags:['一见钟情','不打不相识','重逢没认出来']},
@@ -152,7 +152,7 @@ const DOMAINS=[
 ];
 
 /* ---------- 人物关系：每个分类「谁和谁的对手戏」（按分类配平，随机配方据此保证语义连贯） ---------- */
-const RELS={
+let RELS={
  '单相思':['同桌','前后桌的同事','社团的学长与学妹','青梅竹马','对门的邻居','客户与乙方'],
  '邂逅':['陌生旅人','撞车双方','相亲对象','多年后的青梅竹马','房东与租客','不打不相识的对手'],
  '相守':['异地恋的两人','合租恋人','闪婚夫妻','裸婚小夫妻','毕业就结婚的两人','一起养宠物的人'],
@@ -261,7 +261,7 @@ const RELS={
 };
 
 /* ---------- 故事场景：每个分类「在哪拍」 ---------- */
-const SCENES={
+let SCENES={
 '单相思':['教室后排','公司茶水间','仅他可见的朋友圈','同学聚会的角落'],
 '邂逅':['雨天的便利店','末班地铁','朋友的婚礼','不打不相识的球场'],
 '相守':['出租屋的厨房','视频通话的两端','一起养的猫旁','深夜的泡面桌'],
@@ -379,10 +379,10 @@ function flatSits(dom){
   });
   return out;
 }
-const SITS=(()=>{const out=[];DOMAINS.forEach(d=>out.push(...flatSits(d)));return out;})();
+let SITS=(()=>{const out=[];DOMAINS.forEach(d=>out.push(...flatSits(d)));return out;})();
 
 /* 分类名 → 方向名 */
-const L1_DOM={};DOMAINS.forEach(d=>d.tree.forEach(n=>L1_DOM[n.l1]=d.name));
+let L1_DOM={};DOMAINS.forEach(d=>d.tree.forEach(n=>L1_DOM[n.l1]=d.name));
 /* 展平人物关系 / 故事场景 */
 /* ---------- 情境级场景：每个具体标签「在哪拍」，随机配方据此精确匹配（回退到分类场景池） ---------- */
 const SCENE_FIT={
@@ -760,8 +760,8 @@ const SCENE_FIT={
 };
 function flatRels(){const out=[];Object.entries(RELS).forEach(([l1,arr])=>arr.forEach(t=>out.push({tag:t,dom:L1_DOM[l1],l1})));return out;}
 function flatScenes(){const out=[];Object.entries(SCENES).forEach(([l1,arr])=>arr.forEach(t=>out.push({tag:t,dom:L1_DOM[l1],l1})));return out;}
-const REL_LIST=flatRels(),SCENE_LIST=flatScenes();
-const STATS={domains:DOMAINS.length,l1:DOMAINS.reduce((a,d)=>a+d.tree.length,0),tags:SITS.length,rel:REL_LIST.length,scene:SCENE_LIST.length,mod:MODIFIERS.length};
+let REL_LIST=flatRels(),SCENE_LIST=flatScenes();
+let STATS={domains:DOMAINS.length,l1:DOMAINS.reduce((a,d)=>a+d.tree.length,0),tags:SITS.length,rel:REL_LIST.length,scene:SCENE_LIST.length,mod:MODIFIERS.length};
 
 /* 配方托盘：localStorage 持久化 */
 /* 已连接云存储时数据全部写 GitHub 私有仓库；未连接时降级本浏览器并在顶栏提示 */
@@ -843,8 +843,8 @@ const MOD_EXCLUDE={
  '托孤':['牺牲']
 };
 /* 取样池 = 内置 + 用户自定义（按分类并入） */
-function poolRels(base){const mine=(window.SMCloud?SMCloud.data.rels:[]).filter(x=>x.l1===base).map(x=>x.tag);return (RELS[base]||[]).concat(mine);}
-function poolScenes(base){const mine=(window.SMCloud?SMCloud.data.scenes:[]).filter(x=>x.l1===base).map(x=>x.tag);return (SCENES[base]||[]).concat(mine);}
+function poolRels(base){return RELS[base]||[];}
+function poolScenes(base){return SCENES[base]||[];}
 function randomPF(){
   const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
   const d=pick(DOMAINS);
@@ -854,7 +854,7 @@ function randomPF(){
   const rels=poolRels(base);
   if(rels.length&&Math.random()<.92)out.push({cat:'rel',tag:pick(rels),dom:d.name});
   const sfit=SCENE_FIT[base+'|'+sit.tag];
-  const sc=sfit?sfit.concat((window.SMCloud?SMCloud.data.scenes:[]).filter(x=>x.l1===base).map(x=>x.tag)):poolScenes(base);
+  const sc=sfit?[...new Set(sfit.concat(SCENES[base]||[]))]:(SCENES[base]||[]);
   if(sc.length&&Math.random()<.85)out.push({cat:'scene',tag:pick(sc),dom:d.name});
   const ex=MOD_EXCLUDE[sit.tag]||[];
   const fit=(MOD_FIT[d.id]||MODIFIERS).filter(m=>!ex.includes(m));
@@ -872,3 +872,36 @@ const GROUPS=[
  {name:'和家国的事',ids:['guxiang','jiaguo']},
  {name:'和世界的事',ids:['ziran']}
 ];
+
+/* ---------- 全量可编辑数据层（v2） ----------
+   连接存储后，方向/分类/情境/关系/场景 的全部数据以云为准（tax + rels + scenes），
+   本文件内置数据只作首次种子与离线兜底。applyTax() 在云数据变化时重建运行时结构。 */
+const BUILTIN={
+  doms:DOMAINS,
+  rels:JSON.parse(JSON.stringify(RELS)),
+  scenes:JSON.parse(JSON.stringify(SCENES)),
+  sitSet:(()=>{const s=new Set();DOMAINS.forEach(d=>flatSits(d).forEach(x=>s.add(x.l1+'|'+x.tag)));return s;})(),
+  catSet:new Set(Object.keys(RELS)),
+  domSet:new Set(DOMAINS.map(d=>d.name))
+};
+function applyTax(){
+  const on=cloudOn()&&Array.isArray(SMCloud.data.tax)&&SMCloud.data.tax.length;
+  const domSrc=on?SMCloud.data.tax:BUILTIN.doms;
+  DOMAINS=JSON.parse(JSON.stringify(domSrc));
+  L1_DOM={};DOMAINS.forEach(d=>d.tree.forEach(n=>L1_DOM[n.l1]=d.name));
+  SITS.length=0;DOMAINS.forEach(d=>SITS.push(...flatSits(d)));
+  const pairs=on?SMCloud.data.rels:(()=>{const o=[];Object.entries(BUILTIN.rels).forEach(([l1,a])=>a.forEach(t=>o.push({tag:t,l1})));return o;})();
+  RELS={};pairs.forEach(x=>{(RELS[x.l1]=RELS[x.l1]||[]).push(x.tag)});
+  const spairs=on?SMCloud.data.scenes:(()=>{const o=[];Object.entries(BUILTIN.scenes).forEach(([l1,a])=>a.forEach(t=>o.push({tag:t,l1})));return o;})();
+  SCENES={};spairs.forEach(x=>{(SCENES[x.l1]=SCENES[x.l1]||[]).push(x.tag)});
+  REL_LIST.length=0;REL_LIST.push(...flatRels());
+  SCENE_LIST.length=0;SCENE_LIST.push(...flatScenes());
+  STATS.domains=DOMAINS.length;STATS.l1=DOMAINS.reduce((a,d)=>a+d.tree.length,0);
+  STATS.tags=SITS.length;STATS.rel=REL_LIST.length;STATS.scene=SCENE_LIST.length;
+}
+function isBuiltinDom(name){return BUILTIN.domSet.has(name);}
+function isBuiltinCat(l1){return BUILTIN.catSet.has(l1);}
+function isBuiltinSit(l1,tag){return BUILTIN.sitSet.has(l1+'|'+tag);}
+function isBuiltinRel(l1,tag){return (BUILTIN.rels[l1]||[]).includes(tag);}
+function isBuiltinScene(l1,tag){return (BUILTIN.scenes[l1]||[]).includes(tag);}
+applyTax();

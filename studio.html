@@ -6,7 +6,7 @@
   <title>灵感组合 · 灵感矩阵</title>
   <meta name="description" content="18个灵感方向、371个情境、541组人物关系、337个故事场景、10个转折词自由搭配，自定义关系与场景，数据存在你自己的 GitHub 私有仓库。">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237c3aed'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white'>叙</text></svg>">
-  <link rel="stylesheet" href="assets/style.css?v=6">
+  <link rel="stylesheet" href="assets/style.css?v=7">
 </head>
 <body>
 <div class="wrap">
@@ -31,14 +31,16 @@
   </section>
 </div>
 
-<script src="assets/data.js?v=6"></script>
-<script src="assets/common.js?v=6"></script>
-<script src="assets/cloud.js?v=6"></script>
+<script src="assets/data.js?v=7"></script>
+<script src="assets/common.js?v=7"></script>
+<script src="assets/cloud.js?v=7"></script>
 <script>
 initPage('studio.html');
 
 /* 六列：内置四列 + 自定义两列（数据来自云存储，与内置明确区分） */
-const mineList=kind=>SMCloud.data[kind==='rel'?'rels':'scenes'].map(x=>({tag:x.tag,l1:x.l1,dom:L1_DOM[x.l1]||''}));
+const mineList=kind=>SMCloud.data[kind==='rel'?'rels':'scenes']
+  .filter(x=>kind==='rel'?!isBuiltinRel(x.l1,x.tag):!isBuiltinScene(x.l1,x.tag))
+  .map(x=>({tag:x.tag,l1:x.l1,dom:L1_DOM[x.l1]||''}));
 const CAT_META=[
  {key:'sit', title:'情境', sub:'', dot:'#a78bfa', data:SITS, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true},
  {key:'rel', title:'人物关系', sub:'', dot:'#38bdf8', data:REL_LIST, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true},
