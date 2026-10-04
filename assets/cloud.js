@@ -7,7 +7,7 @@ const LS_CFG='sm_cloud_cfg',LS_TOK='sm_cloud_tok',SS_TOK='sm_cloud_tok',FILE='st
 let cfg=null,data=null,sha=null,state='off',busyMsg='',saveTimer=null,saving=false,dirty=false;
 const stateFns=[],dataFns=[];
 const apiBase=()=>window.SM_API_BASE||'https://api.github.com';
-function blank(){return {v:2,tax:null,rels:[],scenes:[],saved:[],pf:[]};}
+function blank(){return {v:3,tax:null,rels:[],scenes:[],saved:[],pf:[]};}
 function norm(){
   data=Object.assign(blank(),data||{});
   ['rels','scenes','saved','pf'].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[];});
@@ -21,6 +21,11 @@ function norm(){
       data.scenes=baseScenes.concat(data.scenes.filter(x=>!(BUILTIN.scenes[x.l1]||[]).includes(x.tag)));
     }else data.tax=[];
     data.v=2;
+  }
+  // v2 → v3：转折词入云（此前版本云文件没有 mods 字段）
+  if(!Array.isArray(data.mods)){
+    data.mods=(typeof BUILTIN!=='undefined')?JSON.parse(JSON.stringify(BUILTIN.mods)):[];
+    data.v=3;
   }
 }
 function loadCfg(){
@@ -195,6 +200,26 @@ const api={
     if(n.tags){const i=n.tags.indexOf(tag);if(i>=0){n.tags.splice(i,1);hit=true;}}
     if(n.groups)n.groups.forEach(g=>{const i=g.tags.indexOf(tag);if(i>=0){g.tags.splice(i,1);hit=true;}});
     if(hit){touch();emit();return true;}return false;
+  },
+  /* ---------- 转折词 CRUD ---------- */
+  addMod(tag){
+    norm();tag=(tag||'').trim();
+    if(!tag)throw new Error('请填写转折词');
+    if(data.mods.includes(tag))throw new Error('已有同名转折词');
+    data.mods.push(tag);touch();emit();return true;
+  },
+  renameMod(oldT,newT){
+    norm();newT=(newT||'').trim();
+    if(!newT)throw new Error('请填写转折词');
+    const i=data.mods.indexOf(oldT);
+    if(i<0)throw new Error('要修改的转折词不存在');
+    if(data.mods.includes(newT)&&newT!==oldT)throw new Error('已有同名转折词');
+    data.mods[i]=newT;touch();emit();return true;
+  },
+  delMod(tag){
+    norm();const i=data.mods.indexOf(tag);
+    if(i<0)return false;
+    data.mods.splice(i,1);touch();emit();return true;
   },
   saveSaved(sv){norm();data.saved=sv;touch();},
   savePF(pf){norm();data.pf=pf;touch();},

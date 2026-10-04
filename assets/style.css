@@ -136,6 +136,7 @@ kbd{font-family:inherit;font-size:11px;border:1px solid var(--line2);border-bott
 .chip.have .plus{transform:none;background:transparent;color:var(--vio)}
 .chip .src{font-size:10.5px;color:var(--dimmer);letter-spacing:.02em}
 .chip.mod{border-color:rgba(232,121,249,.22);color:#e9b8f5}
+.chip.mod .mine-tag{font-size:9.5px;letter-spacing:.14em;color:#b45309;background:rgba(251,191,36,.16);padding:2px 6px;border-radius:99px}
 .chip.mod .plus{color:var(--fuch);background:rgba(232,121,249,.13)}
 .chip.mod:hover .plus{background:var(--grad)}
 

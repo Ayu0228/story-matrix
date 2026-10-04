@@ -6,7 +6,7 @@
   <title>灵感组合 · 灵感矩阵</title>
   <meta name="description" content="18个灵感方向、371个情境、541组人物关系、337个故事场景、10个转折词自由搭配，自定义关系与场景，数据存在你自己的 GitHub 私有仓库。">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237c3aed'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white'>叙</text></svg>">
-  <link rel="stylesheet" href="assets/style.css?v=7">
+  <link rel="stylesheet" href="assets/style.css?v=8">
 </head>
 <body>
 <div class="wrap">
@@ -31,9 +31,9 @@
   </section>
 </div>
 
-<script src="assets/data.js?v=7"></script>
-<script src="assets/common.js?v=7"></script>
-<script src="assets/cloud.js?v=7"></script>
+<script src="assets/data.js?v=8"></script>
+<script src="assets/common.js?v=8"></script>
+<script src="assets/cloud.js?v=8"></script>
 <script>
 initPage('studio.html');
 
@@ -56,6 +56,7 @@ $('#cols').innerHTML=CAT_META.map(m=>`
    <div class="col-head"><h3><span class="dot" style="background:${m.dot};box-shadow:0 0 10px ${m.dot}"></span>${m.title}
      <span class="col-count" id="cnt-${m.key}"></span></h3><div class="sub">${m.sub}</div></div>
    ${m.addKind?`<button class="col-add rip" data-add="${m.addKind}">＋ 添加</button>`:''}
+   ${m.key==='mod'?`<button class="col-add rip" data-addmod>＋ 添加转折词</button>`:''}
    ${m.filter?`<div class="col-filter">
      <input id="q-${m.key}" placeholder="筛选…">
      ${m.key==='sit'?`<select id="domFilter"><option value="">全部</option>${DOMAINS.map(d=>`<option>${d.name}</option>`).join('')}</select>`:''}
@@ -69,7 +70,7 @@ function paintCol(key){
   const q=($('#q-'+key)||{value:''}).value.trim();
   const df=($('#domFilter')||{value:''}).value;
   const pf=loadPF();
-  const src=m.dataFn?m.dataFn():m.data;
+  const src=m.key==='mod'?MODIFIERS.map(t=>({tag:t})):(m.dataFn?m.dataFn():m.data);
   const real=catOf(key);
   const list=src.filter(x=>(!q||x.tag.includes(q)||(x.dom||'').includes(q)||(x.l1||'').includes(q))&&(!df||!x.dom||x.dom===df));
   $('#cnt-'+key).textContent='显示 '+list.length+' / '+src.length;
@@ -77,9 +78,14 @@ function paintCol(key){
     const inPf=pf.some(p=>p.cat===real&&p.tag===x.tag&&(real!=='sit'||p.dom===x.dom));
     if(m.addKind)return `<span class="chip mine ${inPf?'have':''}" data-k="${key}" data-t="${esc(x.tag)}" data-d="${x.dom||''}">
       <span class="plus">+</span>${esc(x.tag)} <span class="src">${esc(x.l1)}</span><span class="mine-tag">自定义</span><button class="mine-del" data-del="${encodeURIComponent(x.tag)}‖${encodeURIComponent(x.l1)}" title="删除">×</button></span>`;
-    return `<span class="chip ${key==='mod'?'mod':''} ${inPf?'have':''}" data-k="${key}" data-t="${esc(x.tag)}" data-d="${x.dom||''}">
-      <span class="plus">+</span>${esc(m.label(x))}${m.src(x)?` <span class="src">${esc(m.src(x))}</span>`:''}</span>`;
-  }).join('')||`<div class="empty-hint">${m.addKind?'还没有，点上方「添加」创建':'无匹配'}</div>`;
+    const custom=key==='mod'&&!isBuiltinMod(x.tag);
+    const crud=key==='mod'?`<span class="crud">
+        <button data-em="${encodeURIComponent(x.tag)}" title="重命名转折词">✎</button>
+        <button data-dm="${encodeURIComponent(x.tag)}" class="del" title="删除转折词">✕</button>
+      </span>`:'';
+    return `<span class="chip ${key==='mod'?'mod':''} ${custom?'mine':''} ${inPf?'have':''}" data-k="${key}" data-t="${esc(x.tag)}" data-d="${x.dom||''}">
+      <span class="plus">+</span>${esc(m.label(x))}${custom?'<span class="mine-tag">自定义</span>':''}${m.src(x)?` <span class="src">${esc(m.src(x))}</span>`:''}${crud}</span>`;
+  }).join('')||`<div class="empty-hint">${m.addKind||m.key==='mod'?'还没有，点上方「添加」创建':'无匹配'}</div>`;
 }
 function paintAll(){CAT_META.forEach(m=>paintCol(m.key));}
 SMCloud.ready.then(paintAll);
@@ -91,14 +97,46 @@ CAT_META.filter(m=>m.filter).forEach(m=>{
 const df=$('#domFilter');
 if(df)df.addEventListener('change',()=>paintCol('sit'));
 
-/* 点击：删除自定义 / 添加自定义 / 入配方 */
-$('#cols').addEventListener('click',e=>{
+/* 点击：删除自定义 / 添加自定义 / 转折词增删改 / 入配方 */
+$('#cols').addEventListener('click',async e=>{
   const del=e.target.closest('.mine-del');
   if(del){
     e.stopPropagation();
     const [tag,l1]=del.dataset.del.split('‖').map(decodeURIComponent);
     const kind=del.closest('[data-key]').dataset.key==='myrel'?'rel':'scene';
     if(kind==='rel'?SMCloud.delRel(tag,l1):SMCloud.delScene(tag,l1)){toast('已删除');paintAll();}
+    return;
+  }
+  /* 转折词：新增 */
+  if(e.target.closest('[data-addmod]')){
+    if(!(await SMCloud.ensureConnected()))return toast('请先连接存储（右上角「存储」）');
+    SMCloud.openModal({
+      title:'添加转折词',okText:'添加',
+      body:`<label class="sm-field"><span>转折词</span><input id="smIn" maxlength="8" placeholder="例如：坦白、诀别、反杀…" autocomplete="off"></label>`,
+      onOk:m=>{const v=m.querySelector('#smIn').value.trim();if(!v)return false;SMCloud.addMod(v);toast('已添加，随机配方会用到它');}
+    });
+    return;
+  }
+  /* 转折词：重命名 / 删除 */
+  const em=e.target.closest('[data-em]'),dm=e.target.closest('[data-dm]');
+  if(em||dm){
+    e.stopPropagation();
+    if(!(await SMCloud.ensureConnected()))return toast('请先连接存储（右上角「存储」）');
+    if(em){
+      const oldT=decodeURIComponent(em.dataset.em);
+      SMCloud.openModal({
+        title:'重命名转折词',okText:'保存',
+        body:`<label class="sm-field"><span>转折词</span><input id="smIn" value="${esc(oldT)}" maxlength="8" autocomplete="off"></label>`,
+        onOk:m=>{const v=m.querySelector('#smIn').value.trim();if(!v||v===oldT)return false;SMCloud.renameMod(oldT,v);toast('已改名');}
+      });
+    }else{
+      const t=decodeURIComponent(dm.dataset.dm);
+      SMCloud.openModal({
+        title:'删除转折词',okText:'确认删除',
+        body:`<p class="sm-tip">将永久删除转折词「<b>${esc(t)}</b>」。此操作不可恢复。</p>`,
+        onOk:()=>{SMCloud.delMod(t);toast('已删除');}
+      });
+    }
     return;
   }
   const add=e.target.closest('[data-add]');

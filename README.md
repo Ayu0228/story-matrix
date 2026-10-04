@@ -2,7 +2,7 @@
 
 写给故事创作者的高频共情选题工具：**不替你想故事，只帮你锁定「还没被写烂」的那个点。**
 
-在线使用：&lt;https://ayu0228.github.io/story-matrix/&gt;
+在线使用：<https://ayu0228.github.io/story-matrix/>
 
 ## 这是什么
 

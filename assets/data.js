@@ -857,8 +857,10 @@ function randomPF(){
   const sc=sfit?[...new Set(sfit.concat(SCENES[base]||[]))]:(SCENES[base]||[]);
   if(sc.length&&Math.random()<.85)out.push({cat:'scene',tag:pick(sc),dom:d.name});
   const ex=MOD_EXCLUDE[sit.tag]||[];
-  const fit=(MOD_FIT[d.id]||MODIFIERS).filter(m=>!ex.includes(m));
-  const pool=fit.length?fit:MODIFIERS;
+  const baseFit=MOD_FIT[d.id]||MODIFIERS;
+  const custom=MODIFIERS.filter(m=>!isBuiltinMod(m)&&!ex.includes(m)); // 用户新增的转折词并入随机池
+  const fit=baseFit.filter(m=>!ex.includes(m));
+  const pool=fit.length?[...new Set(fit.concat(custom))]:MODIFIERS.filter(m=>!ex.includes(m));
   const m1=pick(pool);out.push({cat:'mod',tag:m1,dom:''});
   if(Math.random()<.35){const m2=pick(pool);if(m2!==m1)out.push({cat:'mod',tag:m2,dom:''});}
   return out;
@@ -880,6 +882,7 @@ const BUILTIN={
   doms:DOMAINS,
   rels:JSON.parse(JSON.stringify(RELS)),
   scenes:JSON.parse(JSON.stringify(SCENES)),
+  mods:JSON.parse(JSON.stringify(MODIFIERS)),
   sitSet:(()=>{const s=new Set();DOMAINS.forEach(d=>flatSits(d).forEach(x=>s.add(x.l1+'|'+x.tag)));return s;})(),
   catSet:new Set(Object.keys(RELS)),
   domSet:new Set(DOMAINS.map(d=>d.name))
@@ -896,12 +899,16 @@ function applyTax(){
   SCENES={};spairs.forEach(x=>{(SCENES[x.l1]=SCENES[x.l1]||[]).push(x.tag)});
   REL_LIST.length=0;REL_LIST.push(...flatRels());
   SCENE_LIST.length=0;SCENE_LIST.push(...flatScenes());
+  const modSrc=(on&&Array.isArray(SMCloud.data.mods))?SMCloud.data.mods:BUILTIN.mods;
+  MODIFIERS.length=0;MODIFIERS.push(...modSrc);
   STATS.domains=DOMAINS.length;STATS.l1=DOMAINS.reduce((a,d)=>a+d.tree.length,0);
   STATS.tags=SITS.length;STATS.rel=REL_LIST.length;STATS.scene=SCENE_LIST.length;
+  STATS.mod=MODIFIERS.length;
 }
 function isBuiltinDom(name){return BUILTIN.domSet.has(name);}
 function isBuiltinCat(l1){return BUILTIN.catSet.has(l1);}
 function isBuiltinSit(l1,tag){return BUILTIN.sitSet.has(l1+'|'+tag);}
 function isBuiltinRel(l1,tag){return (BUILTIN.rels[l1]||[]).includes(tag);}
 function isBuiltinScene(l1,tag){return (BUILTIN.scenes[l1]||[]).includes(tag);}
+function isBuiltinMod(tag){return BUILTIN.mods.includes(tag);}
 applyTax();
