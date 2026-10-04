@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>灵感组合 · 灵感矩阵</title>
+  <meta name="description" content="18个灵感方向、371个情境、541组人物关系、337个故事场景、10个转折词自由搭配，自定义关系与场景，数据存在你自己的 GitHub 私有仓库。">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237c3aed'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white'>叙</text></svg>">
+  <link rel="stylesheet" href="assets/style.css?v=6">
+</head>
+<body>
+<div class="wrap">
+
+  <div class="kicker rise">MIX &amp; MATCH</div>
+  <h1 class="title grad-t" data-chars>灵感组合</h1>
+
+  <div style="display:flex;gap:10px;margin:24px 0 22px;flex-wrap:wrap" class="rise">
+    <button class="btn btn-pri btn-sm rip" id="btnRandom">🎲 随机配一组</button>
+    <button class="btn btn-ghost btn-sm rip" id="btnSave">保存</button>
+    <button class="btn btn-ghost btn-sm rip" id="btnCopyTop">复制</button>
+    <button class="btn btn-ghost btn-sm rip" id="btnClearTop">清空</button>
+  </div>
+
+  <div class="cols" id="cols"></div>
+
+  <section class="saved">
+    <div class="sec-head">
+      <h2 class="title rise" style="font-size:22px">已存配方</h2>
+    </div>
+    <div id="savedList"></div>
+  </section>
+</div>
+
+<script src="assets/data.js?v=6"></script>
+<script src="assets/common.js?v=6"></script>
+<script src="assets/cloud.js?v=6"></script>
+<script>
+initPage('studio.html');
+
+/* 六列：内置四列 + 自定义两列（数据来自云存储，与内置明确区分） */
+const mineList=kind=>SMCloud.data[kind==='rel'?'rels':'scenes'].map(x=>({tag:x.tag,l1:x.l1,dom:L1_DOM[x.l1]||''}));
+const CAT_META=[
+ {key:'sit', title:'情境', sub:'', dot:'#a78bfa', data:SITS, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true},
+ {key:'rel', title:'人物关系', sub:'', dot:'#38bdf8', data:REL_LIST, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true},
+ {key:'scene', title:'故事场景', sub:'', dot:'#34d399', data:SCENE_LIST, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true},
+ {key:'mod', title:'转折', sub:'', dot:'#f0abfc', data:MODIFIERS.map(t=>({tag:t})), label:x=>x.tag, src:()=>'', filter:false},
+ {key:'myrel', title:'自定义人物关系', sub:'', dot:'#fbbf24', dataFn:()=>mineList('rel'), addKind:'rel'},
+ {key:'myscene', title:'自定义故事场景', sub:'', dot:'#fbbf24', dataFn:()=>mineList('scene'), addKind:'scene'},
+];
+const catOf=k=>(k==='myrel'?'rel':k==='myscene'?'scene':k);
+
+$('#cols').innerHTML=CAT_META.map(m=>`
+ <div class="col-panel rise" data-key="${m.key}">
+   <div class="col-head"><h3><span class="dot" style="background:${m.dot};box-shadow:0 0 10px ${m.dot}"></span>${m.title}
+     <span class="col-count" id="cnt-${m.key}"></span></h3><div class="sub">${m.sub}</div></div>
+   ${m.addKind?`<button class="col-add rip" data-add="${m.addKind}">＋ 添加</button>`:''}
+   ${m.filter?`<div class="col-filter">
+     <input id="q-${m.key}" placeholder="筛选…">
+     ${m.key==='sit'?`<select id="domFilter"><option value="">全部</option>${DOMAINS.map(d=>`<option>${d.name}</option>`).join('')}</select>`:''}
+   </div>`:''}
+   <div class="col-cloud" id="cloud-${m.key}"></div>
+ </div>`).join('');
+stagger();
+
+function paintCol(key){
+  const m=CAT_META.find(x=>x.key===key);
+  const q=($('#q-'+key)||{value:''}).value.trim();
+  const df=($('#domFilter')||{value:''}).value;
+  const pf=loadPF();
+  const src=m.dataFn?m.dataFn():m.data;
+  const real=catOf(key);
+  const list=src.filter(x=>(!q||x.tag.includes(q)||(x.dom||'').includes(q)||(x.l1||'').includes(q))&&(!df||!x.dom||x.dom===df));
+  $('#cnt-'+key).textContent='显示 '+list.length+' / '+src.length;
+  $('#cloud-'+key).innerHTML=list.map(x=>{
+    const inPf=pf.some(p=>p.cat===real&&p.tag===x.tag&&(real!=='sit'||p.dom===x.dom));
+    if(m.addKind)return `<span class="chip mine ${inPf?'have':''}" data-k="${key}" data-t="${esc(x.tag)}" data-d="${x.dom||''}">
+      <span class="plus">+</span>${esc(x.tag)} <span class="src">${esc(x.l1)}</span><span class="mine-tag">自定义</span><button class="mine-del" data-del="${encodeURIComponent(x.tag)}‖${encodeURIComponent(x.l1)}" title="删除">×</button></span>`;
+    return `<span class="chip ${key==='mod'?'mod':''} ${inPf?'have':''}" data-k="${key}" data-t="${esc(x.tag)}" data-d="${x.dom||''}">
+      <span class="plus">+</span>${esc(m.label(x))}${m.src(x)?` <span class="src">${esc(m.src(x))}</span>`:''}</span>`;
+  }).join('')||`<div class="empty-hint">${m.addKind?'还没有，点上方「添加」创建':'无匹配'}</div>`;
+}
+function paintAll(){CAT_META.forEach(m=>paintCol(m.key));}
+SMCloud.ready.then(paintAll);
+SMCloud.onData(paintAll);
+
+CAT_META.filter(m=>m.filter).forEach(m=>{
+  $('#q-'+m.key).addEventListener('input',()=>paintCol(m.key));
+});
+const df=$('#domFilter');
+if(df)df.addEventListener('change',()=>paintCol('sit'));
+
+/* 点击：删除自定义 / 添加自定义 / 入配方 */
+$('#cols').addEventListener('click',e=>{
+  const del=e.target.closest('.mine-del');
+  if(del){
+    e.stopPropagation();
+    const [tag,l1]=del.dataset.del.split('‖').map(decodeURIComponent);
+    const kind=del.closest('[data-key]').dataset.key==='myrel'?'rel':'scene';
+    if(kind==='rel'?SMCloud.delRel(tag,l1):SMCloud.delScene(tag,l1)){toast('已删除');paintAll();}
+    return;
+  }
+  const add=e.target.closest('[data-add]');
+  if(add){openAddModal(add.dataset.add);return;}
+  const c=e.target.closest('.chip[data-k]');if(!c)return;
+  quickAdd({cat:catOf(c.dataset.k),tag:c.dataset.t,dom:c.dataset.d});
+  paintAll();
+});
+
+/* 添加自定义弹窗：名称 + 所属分类（随机配方与下钻按分类归位） */
+function openAddModal(kind){
+  if(!SMCloud.ensureConnected())return toast('请先连接存储（右上角「存储」）');
+  const isRel=kind==='rel';
+  SMCloud.openModal({
+    title:isRel?'添加自定义人物关系':'添加自定义故事场景',
+    okText:'添加',
+    body:`
+      <p class="sm-tip">自定义条目带「自定义」标记，和系统内置区分；归到所选分类后，<b>随机配方和下钻页都会用到它</b>。</p>
+      <label class="sm-field"><span>名称</span><input id="addName" maxlength="16" placeholder="${isRel?'例如：闺蜜与她的猫':'例如：凌晨的急诊室'}"></label>
+      <label class="sm-field"><span>属于哪个分类</span><input id="addL1" list="l1opts" placeholder="输入或选择，如：委屈 / 裂缝 / 暖意">
+        <datalist id="l1opts">${Object.keys(L1_DOM).map(k=>`<option value="${k}">`).join('')}</datalist></label>
+    `,
+    onOk:(mask)=>{
+      const tag=mask.querySelector('#addName').value.trim();
+      const l1=mask.querySelector('#addL1').value.trim();
+      if(!tag)throw new Error('请填写名称');
+      if(!L1_DOM[l1])throw new Error('分类不存在，请从下拉列表里选择');
+      if((isRel?RELS[l1]:SCENES[l1]||[]).includes(tag))throw new Error('系统内置里已有同名条目');
+      if(SMCloud.data[isRel?'rels':'scenes'].some(x=>x.tag===tag&&x.l1===l1))throw new Error('你的自定义里已有同名条目');
+      const ok=isRel?SMCloud.addRel(tag,l1):SMCloud.addScene(tag,l1);
+      if(ok)toast('已添加，正在同步…');
+      return ok;
+    }
+  });
+}
+
+/* 随机 / 保存 / 复制 / 清空 */
+function doRandom(){
+  pfClear();
+  randomPF().forEach(x=>pfAdd(x));
+  renderDock();paintAll();
+  toast('已随机配好一组，可直接复制');
+}
+$('#btnRandom').addEventListener('click',doRandom);
+$('#btnClearTop').addEventListener('click',()=>{pfClear();renderDock();paintAll();toast('已清空');});
+$('#btnCopyTop').addEventListener('click',()=>{
+  const a=loadPF();
+  if(!a.length)return toast('配方是空的');
+  copyText(pfText(a),'配方已复制');
+});
+$('#btnSave').addEventListener('click',()=>{
+  const a=loadPF();
+  if(a.length<2)return toast('至少组合 2 个元素再保存');
+  const sv=loadSV();
+  sv.unshift({t:Date.now(),items:a});
+  saveSV(sv.slice(0,30));
+  paintSaved();
+  toast(SMCloud.isOn()?'已保存并同步':'已保存（未连接存储，只存在本浏览器）');
+});
+
+/* 已存配方 */
+function paintSaved(){
+  const sv=loadSV(),box=$('#savedList');
+  if(!sv.length){
+    box.innerHTML=`<div class="empty-hint">${SMCloud.isOn()?'暂无':'未连接存储——保存的配方只留在本浏览器；点右上角「存储」连接后跨设备可用'}</div>`;
+    return;
+  }
+  box.innerHTML=sv.map((s,i)=>`
+    <div class="saved-row">
+      <div class="sf">${pfText(s.items)}</div>
+      <div class="st">${new Date(s.t).toLocaleString('zh-CN',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})} · ${s.items.length} 个元素</div>
+      <div class="ops">
+        <button class="mini rip" data-load="${i}">载入</button>
+        <button class="mini del rip" data-del="${i}">删除</button>
+      </div>
+    </div>`).join('');
+}
+$('#savedList').addEventListener('click',e=>{
+  const l=e.target.closest('[data-load]'),d=e.target.closest('[data-del]');
+  if(l){savePF(loadSV()[+l.dataset.load].items);renderDock();paintAll();toast('已载入配方');}
+  if(d){const sv=loadSV();sv.splice(+d.dataset.del,1);saveSV(sv);paintSaved();toast('已删除');}
+});
+SMCloud.ready.then(paintSaved);
+SMCloud.onData(()=>{paintSaved();renderDock();});
+</script>
+</body>
+</html>

@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>灵感方向 · 灵感矩阵</title>
+<link rel="stylesheet" href="assets/style.css?v=6">
+<style>
+/* 矩阵页专属 */
+.crumbs{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:26px;flex-wrap:wrap;min-height:22px}
+.crumb{padding:6px 15px;border-radius:99px;background:var(--surface);border:1px solid var(--line);color:var(--dim);cursor:pointer;transition:all .25s}
+.crumb:hover{color:var(--txt);border-color:var(--line2)}
+.crumb.on{background:var(--grad);color:#160b2e;font-weight:800;border-color:transparent}
+.crumb-sep{color:var(--dimmer)}
+.dom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.dom-card{padding:22px 20px 18px}
+.dom-card h3{font-size:19px;font-weight:900}
+.dom-card .cnt{font-size:11px;color:var(--dimmer);margin-top:7px;letter-spacing:.08em}
+.dom-card .samp{font-size:12.5px;color:var(--dim);margin-top:13px;line-height:1.6;opacity:0;transform:translateY(6px);transition:all .35s var(--ease)}
+.dom-card:hover .samp{opacity:1;transform:none}
+.l1-rail{display:flex;gap:11px;flex-wrap:wrap}
+.l1-card{padding:15px 20px;font-size:15px;font-weight:700}
+.l1-card .n{position:static;font-size:10.5px;color:var(--dimmer);letter-spacing:.14em;display:block;margin-bottom:5px;font-weight:600}
+.sit-panel{margin-top:26px}
+.grp-name{font-size:12px;letter-spacing:.2em;color:var(--dimmer);font-weight:700;margin:22px 0 11px;display:flex;align-items:center;gap:10px}
+.grp-name::after{content:'';flex:1;height:1px;background:var(--line)}
+.chip-cloud{display:flex;flex-wrap:wrap;gap:9px}
+.klib{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-top:24px}
+.klib .col{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px}
+.klib .col h4{font-size:12px;letter-spacing:.2em;color:var(--vio);margin-bottom:13px;display:flex;justify-content:space-between;align-items:center}
+.klib .col h4 span{color:var(--dimmer);font-weight:500;letter-spacing:.05em}
+.klib .chip{font-size:12.5px;padding:6px 12px;margin:0 6px 7px 0}
+.empty-hint{color:var(--dimmer);font-size:14px;padding:40px 0;text-align:center}
+/* 搜索 */
+.sr-mask{position:fixed;inset:0;z-index:80;background:rgba(5,3,12,.7);backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .3s}
+.sr-mask.open{opacity:1;pointer-events:auto}
+.sr-panel{position:fixed;left:50%;top:14vh;transform:translate(-50%,14px);z-index:81;width:min(640px,calc(100vw - 32px));
+  background:rgba(15,10,29,.96);border:1px solid var(--line2);border-radius:20px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.6),0 0 50px -8px rgba(167,139,250,.3);opacity:0;pointer-events:none;transition:all .35s var(--spring)}
+.sr-mask.open+.sr-panel,.sr-panel.open{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+.sr-input{width:100%;padding:19px 22px;background:transparent;border:none;outline:none;color:var(--txt);font-size:16.5px;border-bottom:1px solid var(--line)}
+.sr-input::placeholder{color:var(--dimmer)}
+.sr-list{max-height:52vh;overflow-y:auto;padding:9px}
+.sr-row{display:flex;align-items:center;gap:11px;padding:11px 13px;border-radius:12px;cursor:pointer;transition:background .2s}
+.sr-row:hover,.sr-row.sel{background:rgba(167,139,250,.1)}
+.sr-row .src{font-size:11px;color:var(--dimmer);flex:none;letter-spacing:.04em}
+.sr-row b{font-weight:600;font-size:14.5px}
+.sr-row .add{margin-left:auto;width:24px;height:24px;border-radius:8px;display:grid;place-items:center;color:var(--vio);background:rgba(167,139,250,.13);font-size:15px;flex:none;transition:all .2s}
+.sr-row .add:hover{background:var(--grad);color:#160b2e}
+.sr-foot{padding:11px 18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--dimmer);display:flex;gap:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker rise">STORY DIRECTIONS</div>
+  <h1 class="title rise"><span class="grad-t" data-chars>灵感方向</span></h1>
+
+  <div style="display:flex;justify-content:flex-end;margin-top:6px">
+    <button class="btn btn-ghost btn-sm rip" id="openSr">搜一搜 <kbd>/</kbd></button>
+  </div>
+
+  <div class="crumbs" id="crumbs" style="margin-top:16px"></div>
+  <div id="stage"></div>
+</div>
+
+<!-- 搜索 -->
+<div class="sr-mask" id="srMask"></div>
+<div class="sr-panel" id="srPanel">
+  <input class="sr-input" id="srInput" placeholder="想找什么？试试「暗恋」「重逢」「被抢功劳」…" autocomplete="off">
+  <div class="sr-list" id="srList"></div>
+  <div class="sr-foot"><span>↑↓ 移动</span><span>↵ 跳过去</span><span>+ 直接入配方</span><span>esc 关闭</span></div>
+</div>
+
+<script src="assets/data.js?v=6"></script>
+<script src="assets/common.js?v=6"></script>
+<script src="assets/cloud.js?v=6"></script>
+<script>
+initPage('matrix.html');
+const stage=$('#stage'),crumbs=$('#crumbs');
+const sel={dom:null,l1:null};
+
+/* ---------- 面包屑 ---------- */
+function renderCrumbs(){
+  const d=sel.dom?DOMAINS.find(x=>x.id===sel.dom):null;
+  let h=`<span class="crumb ${!d?'on':''}" data-go="">全部</span>`;
+  if(d){
+    h+=`<span class="crumb-sep">→</span><span class="crumb ${!sel.l1?'on':''}" data-go="${d.id}">${d.name}</span>`;
+    if(sel.l1!=null)h+=`<span class="crumb-sep">→</span><span class="crumb on">${d.tree[sel.l1].l1}</span>`;
+  }
+  crumbs.innerHTML=h;
+}
+crumbs.addEventListener('click',e=>{
+  const c=e.target.closest('.crumb');if(!c)return;
+  const go=c.dataset.go;
+  if(go===''){sel.dom=null;sel.l1=null;renderDomGrid();}
+  else{sel.dom=go;sel.l1=null;renderL1();}
+});
+
+/* ---------- 第一层：灵感方向（按"和谁的事"分组） ---------- */
+function renderDomGrid(){
+  renderCrumbs();
+  stage.innerHTML=GROUPS.map(g=>`
+    <div class="rise" style="margin-bottom:26px">
+      <div class="grp-name" style="margin:24px 0 14px">${g.name}</div>
+      <div class="dom-grid">${g.ids.map(id=>{
+        const d=DOMAINS.find(x=>x.id===id),i=DOMAINS.indexOf(d);
+        const n=flatSits(d).length;
+        const samp=d.tree[0].tags?d.tree[0].tags.slice(0,2).join(' · '):(d.tree[0].groups[0].tags.slice(0,2).join(' · '));
+        return `<div class="card dom-card rip" data-dom="${d.id}">
+          <span class="idx">${String(i+1).padStart(2,'0')}</span>
+          <h3>${d.name}</h3>
+          <div class="cnt">${d.tree.length} 类 · ${n} 个情境</div>
+          <div class="samp">${samp}…</div>
+        </div>`;}).join('')}</div>
+    </div>`).join('');
+  stagger();
+}
+stage.addEventListener('click',e=>{
+  if(e.target.closest('.mine-del'))return; // 删除按钮走 document 层处理器
+  const c=e.target.closest('.dom-card');
+  if(c){sel.dom=c.dataset.dom;sel.l1=null;renderL1();}
+  const l=e.target.closest('.l1-card');
+  if(l){sel.l1=+l.dataset.l1;renderL2();}
+});
+
+/* ---------- 第二层：大类 ---------- */
+function renderL1(){
+  renderCrumbs();
+  const d=DOMAINS.find(x=>x.id===sel.dom);
+  const total=flatSits(d).length;
+  stage.innerHTML=`
+    <p class="rise in" style="color:var(--dimmer);font-size:12.5px;letter-spacing:.1em;margin-bottom:16px">${d.name} · ${d.tree.length} 类 · ${total} 个情境</p>
+    <div class="l1-rail">${d.tree.map((n,i)=>{
+      const cnt=n.tags?n.tags.length:n.groups.reduce((s,g)=>s+g.tags.length,0);
+      return `<div class="card l1-card rise rip" data-l1="${i}"><span class="n">${String(i+1).padStart(2,'0')} · ${cnt} 个</span>${n.l1}</div>`;
+    }).join('')}</div>
+    <div id="l2box"></div>`;
+  stagger();
+}
+
+/* ---------- 第三层：情境标签 ---------- */
+function renderL2(){
+  renderCrumbs();
+  const d=DOMAINS.find(x=>x.id===sel.dom),n=d.tree[sel.l1];
+  const chip=(t,grp)=>`<span class="chip rip" data-add="sit" data-tag="${esc(t)}" data-dom="${d.name}">
+    <span class="plus">+</span>${esc(t)}${grp?` <span class="src">${esc(grp)}</span>`:''}</span>`;
+  let inner='';
+  if(n.tags)inner=`<div class="chip-cloud">${n.tags.map(t=>chip(t)).join('')}</div>`;
+  else inner=n.groups.map(g=>`<div class="grp-name">${g.name}</div><div class="chip-cloud">${g.tags.map(t=>chip(t,g.name)).join('')}</div>`).join('');
+  const side=(title,color,html)=>html?`<div class="grp-name" style="margin-top:18px;color:${color}">${title}</div><div class="chip-cloud">${html}</div>`:'';
+  const mineChip=cat=>x=>`<span class="chip mine rip" data-add="${cat}" data-tag="${esc(x.tag)}" data-dom="${d.name}">
+    <span class="plus">+</span>${esc(x.tag)}<span class="mine-tag">自定义</span><button class="mine-del" data-k="${cat}" data-del="${encodeURIComponent(x.tag)}‖${encodeURIComponent(x.l1)}" title="删除">×</button></span>`;
+  const relInner=(RELS[n.l1]||[]).map(t=>`<span class="chip rip" data-add="rel" data-tag="${esc(t)}" data-dom="${d.name}"><span class="plus">+</span>${esc(t)}</span>`).join('')
+    +SMCloud.data.rels.filter(x=>x.l1===n.l1).map(mineChip('rel')).join('');
+  const scInner=(SCENES[n.l1]||[]).map(t=>`<span class="chip rip" data-add="scene" data-tag="${esc(t)}" data-dom="${d.name}"><span class="plus">+</span>${esc(t)}</span>`).join('')
+    +SMCloud.data.scenes.filter(x=>x.l1===n.l1).map(mineChip('scene')).join('');
+  $('#l2box').innerHTML=`<div class="sit-panel rise in" style="animation:riseIn .5s var(--ease) both">
+    <div class="grp-name" style="margin-top:6px">「${esc(n.l1)}」 · 点 + 收进配方</div>${inner}
+    ${side('适合的人物关系','#7dd3fc',relInner)}${side('适合的故事场景','#6ee7b7',scInner)}</div>`;
+}
+
+/* ---------- 点击 + 入配方 / 删除自定义 ---------- */
+document.addEventListener('click',e=>{
+  const md=e.target.closest('.mine-del');
+  if(md){
+    e.stopPropagation();
+    const [tag,l1]=md.dataset.del.split('‖').map(decodeURIComponent);
+    const ok=md.dataset.k==='rel'?SMCloud.delRel(tag,l1):SMCloud.delScene(tag,l1);
+    if(ok){toast('已删除');if(sel.l1!=null)renderL2();renderDockStates();}
+    return;
+  }
+  const a=e.target.closest('[data-add]');
+  if(!a)return;
+  quickAdd({cat:a.dataset.add,tag:a.dataset.tag,dom:a.dataset.dom});
+  a.classList.add('have');
+  renderDockStates();
+});
+SMCloud.onData(()=>{if(sel.l1!=null)renderL2();renderDockStates();});
+function renderDockStates(){
+  const pf=loadPF();
+  $$('[data-add]').forEach(el=>{
+    const cat=el.dataset.add==='sit2'?'sit':el.dataset.add;
+    el.classList.toggle('have',pf.some(x=>x.cat===cat&&x.tag===el.dataset.tag&&x.dom===el.dataset.dom));
+  });
+}
+
+/* ---------- 搜索（含自定义条目） ---------- */
+const INDEX=[];
+function buildIndex(){
+  INDEX.length=0;
+  DOMAINS.forEach(d=>{
+    d.tree.forEach((n,i)=>{
+      if(n.tags)n.tags.forEach(t=>INDEX.push({t,dom:d.name,domId:d.id,l1:i,cat:'sit'}));
+      if(n.groups)n.groups.forEach(g=>g.tags.forEach(t=>INDEX.push({t,dom:d.name,domId:d.id,l1:i,cat:'sit',grp:g.name})));
+    });
+  });
+  MODIFIERS.forEach(t=>INDEX.push({t,dom:'转折词',cat:'mod'}));
+  DOMAINS.forEach(d=>d.tree.forEach((n,i)=>{(RELS[n.l1]||[]).forEach(t=>INDEX.push({t,dom:d.name,domId:d.id,l1:i,grp:n.l1,cat:'rel'}));}));
+  DOMAINS.forEach(d=>d.tree.forEach((n,i)=>{(SCENES[n.l1]||[]).forEach(t=>INDEX.push({t,dom:d.name,domId:d.id,l1:i,grp:n.l1,cat:'scene'}));}));
+  SMCloud.data.rels.forEach(x=>{
+    const d=DOMAINS.find(dd=>dd.name===L1_DOM[x.l1]);if(!d)return;
+    const i=d.tree.findIndex(n=>n.l1===x.l1);if(i<0)return;
+    INDEX.push({t:x.tag,dom:d.name,domId:d.id,l1:i,grp:x.l1,cat:'rel'});
+  });
+  SMCloud.data.scenes.forEach(x=>{
+    const d=DOMAINS.find(dd=>dd.name===L1_DOM[x.l1]);if(!d)return;
+    const i=d.tree.findIndex(n=>n.l1===x.l1);if(i<0)return;
+    INDEX.push({t:x.tag,dom:d.name,domId:d.id,l1:i,grp:x.l1,cat:'scene'});
+  });
+}
+buildIndex();
+SMCloud.ready.then(buildIndex);
+SMCloud.onData(buildIndex);
+
+const srMask=$('#srMask'),srPanel=$('#srPanel'),srInput=$('#srInput'),srList=$('#srList');
+let srSel=0,srRows=[];
+function openSr(){srMask.classList.add('open');srPanel.classList.add('open');srInput.value='';paintSr('');setTimeout(()=>srInput.focus(),80);}
+function closeSr(){srMask.classList.remove('open');srPanel.classList.remove('open');}
+$('#openSr').addEventListener('click',openSr);
+srMask.addEventListener('click',closeSr);
+addEventListener('keydown',e=>{
+  if(e.key==='/'&&!srPanel.classList.contains('open')&&document.activeElement.tagName!=='INPUT'){e.preventDefault();openSr();}
+  if(e.key==='Escape')closeSr();
+  if(!srPanel.classList.contains('open'))return;
+  if(e.key==='ArrowDown'){e.preventDefault();srSel=Math.min(srSel+1,srRows.length-1);paintSel();}
+  if(e.key==='ArrowUp'){e.preventDefault();srSel=Math.max(srSel-1,0);paintSel();}
+  if(e.key==='Enter'&&srRows[srSel]){e.preventDefault();jumpTo(srRows[srSel]);}
+});
+function paintSel(){$$('.sr-row').forEach((r,i)=>r.classList.toggle('sel',i===srSel));const s=$('.sr-row.sel');if(s)s.scrollIntoView({block:'nearest'});}
+function paintSr(q){
+  q=q.trim();
+  const hits=q?INDEX.filter(x=>(x.t+x.dom+(x.grp||'')).includes(q)):INDEX.slice(0,30);
+  srRows=hits.slice(0,50);srSel=0;
+  srList.innerHTML=srRows.length?srRows.map((x,i)=>`
+    <div class="sr-row ${i===0?'sel':''}" data-i="${i}">
+      <span class="src">${x.dom}${x.grp?'·'+x.grp:''} · ${CAT_NAME[x.cat==='sit2'?'sit':x.cat]||CAT_NAME[x.cat]}</span>
+      <b>${x.t}</b><span class="add" data-jump="${i}">＋</span>
+    </div>`).join(''):`<div class="empty-hint">没有匹配的标签</div>`;
+}
+srInput.addEventListener('input',()=>paintSr(srInput.value));
+function jumpTo(x){
+  if(x.cat==='mod'){closeSr();location.href='studio.html';return;}
+  sel.dom=x.domId;renderCrumbs();
+  if(x.cat==='rel'&&x.l1==null){renderL1();renderDockStates();closeSr();toast(`已定位：${x.dom} 的人物关系`);return;}
+  const l1=x.l1!=null?x.l1:0;
+  sel.l1=l1;renderL1();renderL2();renderDockStates();closeSr();
+  toast(`已定位：${x.dom} · ${DOMAINS.find(d=>d.id===x.domId).tree[l1].l1}`);
+}
+srList.addEventListener('click',e=>{
+  const add=e.target.closest('[data-jump]');
+  if(add){const x=srRows[+add.dataset.jump];
+    if(x.cat==='mod')quickAdd({cat:'mod',tag:x.t,dom:''});
+    else quickAdd({cat:x.cat==='scene'?'scene':x.cat,tag:x.t,dom:x.dom});
+    add.textContent='✓';return;}
+  const row=e.target.closest('.sr-row');
+  if(row)jumpTo(srRows[+row.dataset.i]);
+});
+
+/* ---------- 深链 ---------- */
+const h=location.hash.slice(1);
+if(h&&DOMAINS.some(d=>d.id===h)){sel.dom=h;renderL1();}
+else renderDomGrid();
+</script>
+</body>
+</html>

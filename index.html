@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>灵感矩阵 · 高频共情故事选题系统</title>
+<meta name="description" content="18个灵感方向、371个情境、541组人物关系、337个故事场景、10个转折词，把『想选题』变成『抽公式』。">
+<link rel="stylesheet" href="assets/style.css?v=6">
+<style>
+.stat-strip{display:flex;gap:0;align-items:baseline;flex-wrap:wrap;margin-top:54px;
+  border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px 0}
+.stat-strip .st{margin-right:clamp(22px,4.5vw,54px)}
+.stat-strip .n{font-size:clamp(26px,3.4vw,38px);font-weight:900}
+.stat-strip .l{font-size:12px;color:var(--dimmer);margin-left:8px;letter-spacing:.08em}
+.entries{display:flex;gap:clamp(20px,4vw,48px);flex-wrap:wrap;margin-top:44px}
+.entry{display:inline-flex;align-items:center;gap:10px;font-size:16px;font-weight:800;cursor:pointer;
+  color:var(--dim);transition:color .25s}
+.entry:hover{color:var(--txt)}
+.entry .e-arr{width:30px;height:30px;border-radius:50%;border:1px solid var(--line2);display:grid;place-items:center;
+  font-size:13px;color:var(--vio);transition:all .35s var(--spring)}
+.entry:hover .e-arr{background:var(--grad);color:#160b2e;transform:translateX(4px);border-color:transparent}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <section style="min-height:86vh;display:flex;flex-direction:column;justify-content:center">
+    <div class="kicker rise">EMPATHY STORY LAB</div>
+    <h1 class="display">
+      <span class="grad-t" data-chars>别憋选题了，</span><br>
+      <span data-chars>抽一条公式。</span>
+    </h1>
+    <p class="lead rise" style="margin-top:24px;font-size:16px">
+      18 个灵感方向、371 个情境，配上人物关系、故事场景和 10 个转折词——灵感不靠憋，靠抽。
+    </p>
+    <div class="rise" style="display:flex;gap:14px;margin-top:36px;flex-wrap:wrap">
+      <a class="btn btn-pri rip" href="studio.html">🎲 抽一条 <span class="arr">→</span></a>
+      <a class="btn btn-ghost rip" href="matrix.html">灵感方向</a>
+    </div>
+
+    <!-- 今日配方 -->
+    <div class="rise" style="margin-top:48px">
+      <div class="card" style="cursor:default;padding:24px 26px;max-width:680px">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
+          <b style="font-size:12px;letter-spacing:.26em;color:var(--vio)">今日配方</b>
+          <button class="btn btn-ghost btn-sm rip" id="reRoll">🎲 换一批</button>
+        </div>
+        <div id="heroPF" style="display:flex;flex-wrap:wrap;gap:8px;margin:15px 0 10px"></div>
+        <p id="heroSent" style="color:var(--dim);font-size:14px;line-height:1.8;min-height:1.5em"></p>
+      </div>
+    </div>
+
+    <!-- 统计条 -->
+    <div class="stat-strip rise">
+      <span class="st"><span class="n grad-t">18</span><span class="l">个灵感方向</span></span>
+      <span class="st"><span class="n grad-t">371</span><span class="l">情境</span></span>
+      <span class="st"><span class="n grad-t">105</span><span class="l">类</span></span>
+      <span class="st"><span class="n grad-t">10</span><span class="l">转折词</span></span>
+    </div>
+
+    <!-- 入口 -->
+    <div class="entries rise">
+      <a class="entry rip" href="matrix.html"><span class="e-arr">→</span>灵感方向</a>
+      <a class="entry rip" href="studio.html"><span class="e-arr">→</span>灵感组合</a>
+      <a class="entry rip" href="method.html"><span class="e-arr">→</span>怎么用</a>
+    </div>
+  </section>
+
+</div>
+
+<script src="assets/data.js?v=6"></script>
+<script src="assets/common.js?v=6"></script>
+<script src="assets/cloud.js?v=6"></script>
+<script>
+initPage('index.html',false);
+
+function renderHeroPF(){
+  const pf=randomPF(),box=$('#heroPF');
+  box.innerHTML=pf.map(x=>`<span class="chip ${x.cat==='mod'?'mod':''}" style="cursor:default;pointer-events:none">
+    <span class="src">${CAT_NAME[x.cat]}</span>${esc(x.cat==='sit'?x.dom+'·'+x.tag:x.tag)}</span>`).join('');
+  $('#heroSent').textContent='→ '+pfSentence(pf);
+}
+$('#reRoll').addEventListener('click',()=>{
+  const b=$('#heroPF');b.style.opacity=0;b.style.transform='translateY(8px)';
+  setTimeout(()=>{renderHeroPF();b.style.transition='all .45s cubic-bezier(.22,.61,.36,1)';b.style.opacity=1;b.style.transform='none';},200);
+});
+SMCloud.ready.then(renderHeroPF);
+</script>
+</body>
+</html>

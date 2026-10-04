@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>怎么用 · 灵感矩阵</title>
+<link rel="stylesheet" href="assets/style.css?v=6">
+<style>
+.layer-diagram{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.layer{padding:24px 22px;border-radius:18px;position:relative;overflow:hidden}
+.layer::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--grad)}
+.layer h3{font-size:17px;font-weight:900}
+.layer .en{font-size:10.5px;letter-spacing:.26em;color:var(--dimmer);font-weight:700;margin-top:4px}
+.layer p{color:var(--dim);font-size:13.5px;line-height:1.8;margin-top:12px}
+.axis-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.axis{font-size:12px;padding:5px 12px;border-radius:99px;background:rgba(167,139,250,.09);border:1px solid rgba(167,139,250,.22);color:#cfc3f5}
+.flow-steps{counter-reset:st}
+.flow-step{display:flex;gap:18px;padding:22px 0;border-bottom:1px solid var(--line)}
+.flow-step:last-child{border:none}
+.flow-step::before{counter-increment:st;content:counter(st,decimal-leading-zero);flex:none;width:44px;height:44px;border-radius:13px;
+  background:var(--grad);color:#160b2e;font-weight:900;font-size:16px;display:grid;place-items:center;box-shadow:0 0 20px rgba(167,139,250,.35)}
+.flow-step h4{font-size:16.5px;font-weight:800}
+.flow-step p{color:var(--dim);font-size:14px;line-height:1.8;margin-top:6px}
+.ex-card{padding:26px;margin-bottom:15px}
+.ex-formula{font-size:16px;font-weight:800;color:#eadcff;margin:10px 0 8px;line-height:1.7}
+.ex-out{color:var(--dim);font-size:14px;line-height:1.85}
+.ex-out b{color:var(--fuch)}
+table.modt{width:100%;border-collapse:collapse;font-size:13.5px}
+.modt td,.modt th{padding:11px 14px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+.modt th{font-size:11.5px;letter-spacing:.2em;color:var(--dimmer);font-weight:700}
+.modt td:first-child{color:var(--fuch);font-weight:800;white-space:nowrap}
+.modt td{color:var(--dim);line-height:1.7}
+.modt tr{transition:background .2s}
+.modt tbody tr:hover{background:rgba(167,139,250,.05)}
+.mtitle{font-size:15px;font-weight:900;margin:44px 0 16px;display:flex;align-items:center;gap:12px}
+.mtitle::before{content:'';width:22px;height:22px;border-radius:7px;background:var(--grad);flex:none;box-shadow:0 0 14px rgba(167,139,250,.4)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker rise">HOW IT WORKS</div>
+  <h1 class="title rise"><span class="grad-t" data-chars>怎么用</span></h1>
+  <p class="lead rise" style="margin-top:16px">
+    这套矩阵回答一个问题：<b style="color:var(--txt)">怎样不停地产出让人有共鸣的故事主题？</b>
+    答案不是等灵感，而是把「人会被什么打动」拆成能搜、能组合的词，把选题从「憋」变成「抽」。
+  </p>
+
+  <h2 class="mtitle rise">就三样东西</h2>
+  <div class="layer-diagram">
+    <div class="card layer rise" style="cursor:default"><h3>基本情绪</h3><div class="en">FEELINGS</div>
+      <p>人为什么会被打动？翻来覆去就这些：<b style="color:var(--vio)">聚与散、得与失、亲与疏、生与死、真与假</b>。想不出新题的时候，回到这里重新生发。</p>
+      <div class="axis-row"><span class="axis">喜</span><span class="axis">怒</span><span class="axis">哀</span><span class="axis">惧</span><span class="axis">想念</span><span class="axis">嫉妒</span><span class="axis">感恩</span><span class="axis">愧疚</span><span class="axis">孤独</span></div>
+    </div>
+    <div class="card layer rise" style="cursor:default"><h3>和谁的事 · 灵感方向</h3><div class="en">LIFE STORIES</div>
+      <p>故事往哪儿放？按「和谁的事」分了五组：<b style="color:var(--vio)">和自己的事、和身边人的事、和众人的事、和家国的事、和世界的事</b>。每个方向再往下拆：<b style="color:var(--vio)">分类 → 情境</b>，每个分类都配好了人物关系和故事场景。</p>
+      <div class="axis-row"><span class="axis">灵感方向</span><span class="axis">105 类</span><span class="axis">371 个情境</span></div>
+    </div>
+    <div class="card layer rise" style="cursor:default"><h3>转折词 · 10 个</h3><div class="en">TURNS</div>
+      <p>情绪落在哪儿？加一个字，同一个情境翻出完全不同的题。</p>
+      <div class="axis-row"><span class="axis">背叛</span><span class="axis">和解</span><span class="axis">牺牲</span><span class="axis">亏欠</span><span class="axis">送别</span><span class="axis">重逢</span><span class="axis">错过</span><span class="axis">成全</span><span class="axis">救赎</span><span class="axis">报复</span></div>
+    </div>
+  </div>
+
+  <h2 class="mtitle rise">怎么用：情境 × 关系 × 场景 × 转折</h2>
+  <div class="card rise" style="cursor:default;padding:28px">
+    <div style="font-size:clamp(16px,2.6vw,22px);font-weight:900;line-height:1.7">
+      <span class="grad-t">挑一个情境</span><span style="color:var(--dimmer)"> × </span>配一段关系<span style="color:var(--dimmer)"> × </span>定一个场景<span style="color:var(--dimmer)"> × </span><span class="grad-t">加一个转折词</span><span style="color:var(--dimmer)"> ＝ 一条能写的主题</span>
+    </div>
+    <p style="color:var(--dimmer);font-size:13px;margin-top:12px;letter-spacing:.04em">关系和场景可省；转折词 1–2 个；所有元素随便跨方向挑，看哪个有感觉。</p>
+  </div>
+
+  <div style="margin-top:26px">
+    <div class="card ex-card rise" style="cursor:default">
+      <b style="font-size:12px;letter-spacing:.24em;color:var(--vio)">例 ①</b>
+      <div class="ex-formula">亲情 · 报喜不报忧 × 母子 × 深夜的出租屋 × 亏欠</div>
+      <p class="ex-out">在大城市加班到深夜的儿子，给母亲发去一条语音，说「一切都好」。<b>他不知道的是</b>，母亲刚拔下输液针，笑着回了句「妈也好」——那句亏欠，迟了很多年才说出口。</p>
+    </div>
+    <div class="card ex-card rise" style="cursor:default">
+      <b style="font-size:12px;letter-spacing:.24em;color:var(--vio)">例 ②</b>
+      <div class="ex-formula">友情 · 自然走散 × 老同学 × 同学会 × 重逢</div>
+      <p class="ex-out">说好常联系的人，三年没说过一句话。同学会上那杯没敬完的酒，<b>多年后的重逢，把这一切重新翻开</b>。</p>
+    </div>
+    <div class="card ex-card rise" style="cursor:default">
+      <b style="font-size:12px;letter-spacing:.24em;color:var(--vio)">例 ③</b>
+      <div class="ex-formula">公平 · 被抢功劳 × 实习生与主管 × 会议室 × 报复</div>
+      <p class="ex-out">方案汇报前一晚，他的名字被从 PPT 上划掉。每一页都是他熬夜写的，<b>没人知道，报复从那天起就已埋下</b>。</p>
+    </div>
+  </div>
+
+  <h2 class="mtitle rise">10 个转折词怎么用</h2>
+  <div class="card rise" style="cursor:default;padding:8px 6px;overflow-x:auto">
+    <table class="modt">
+      <thead><tr><th>动词</th><th>情绪落点</th><th>叠加示例</th></tr></thead>
+      <tbody>
+        <tr><td>背叛</td><td>信任崩塌，痛感最强，适合制造冲突与反转</td><td>友情·并肩作战 × 背叛 → 最信任的人递上了辞呈</td></tr>
+        <tr><td>和解</td><td>释然后的暖，适合收尾与治愈</td><td>亲情·被安排着长大 × 和解 → 多年后在产房外握住同一双手</td></tr>
+        <tr><td>牺牲</td><td>沉重的爱，崇高感</td><td>爱情·裂缝 × 牺牲 → 冷淡是为悄悄捐肾配型成功那天</td></tr>
+        <tr><td>亏欠</td><td>还不清的人情债，隐痛绵长</td><td>亲情·反哺不及 × 亏欠 → 子欲养而亲不待的预演</td></tr>
+        <tr><td>送别</td><td>离别仪式感，镜头感强</td><td>家乡·离家那天 × 送别 → 车站里没人回头的父亲</td></tr>
+        <tr><td>重逢</td><td>时间差带来的情绪峰值</td><td>友情·自然走散 × 重逢 → 同学会上那杯没敬完的酒</td></tr>
+        <tr><td>错过</td><td>一步之遥的遗憾，最易共情</td><td>岁月·偏偏差一步 × 错过 → 只差一班电梯的十年</td></tr>
+        <tr><td>成全</td><td>爱是放手，高级且克制</td><td>爱情·门第 × 成全 → 退婚书上他签得比谁都快</td></tr>
+        <tr><td>救赎</td><td>双向拯救，黑暗中透光</td><td>孤独·深夜一碗面 × 救赎 → 便利店店员记住了每个深夜来客</td></tr>
+        <tr><td>报复</td><td>爽感与代价并存，适合做钩子</td><td>公平·被抢功劳 × 报复 → 离职那天我把PPT原稿群发了</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="mtitle rise">日常使用流程</h2>
+  <div class="card rise" style="cursor:default;padding:8px 26px">
+    <div class="flow-steps">
+      <div class="flow-step"><div><h4>随手抽（没感觉时）</h4><p>打开灵感组合点「随机配一组」，连换 5–10 次，只凭第一反应标「有感觉 / 无感」。有感觉的组合直接保存——直觉比推理快。</p></div></div>
+      <div class="flow-step"><div><h4>照着找（有方向时）</h4><p>进「灵感方向」往下点，把有画面感的情境收进配方栏，顺手带上它配好的人物关系和故事场景，再挑一个转折词。</p></div></div>
+      <div class="flow-step"><div><h4>读一遍</h4><p>把组合读出来：能不能一句话说清「谁、发生了什么、情绪落在哪」？说不清就换个转折词；太平就再加一个。</p></div></div>
+      <div class="flow-step"><div><h4>存起来</h4><p>用顺手的组合存下来；新想到的情境补进对应的事里面，库跟着你的创作一起长大。</p></div></div>
+    </div>
+  </div>
+
+  <div style="margin-top:56px;display:flex;gap:14px;flex-wrap:wrap" class="rise">
+    <a class="btn btn-pri rip" href="matrix.html">去矩阵里逛逛 <span class="arr">→</span></a>
+    <a class="btn btn-ghost rip" href="studio.html">打开灵感组合</a>
+  </div>
+</div>
+
+<script src="assets/data.js?v=6"></script>
+<script src="assets/common.js?v=6"></script>
+<script src="assets/cloud.js?v=6"></script>
+<script>initPage('method.html',false);</script>
+</body>
+</html>
