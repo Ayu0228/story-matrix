@@ -1,4 +1,4 @@
-/* ============ 灵感矩阵 · 全站设计系统 ============ */
+/* ============ 灵感工作台 · 全站设计系统 ============ */
 :root{
   --bg:#080512;
   --bg2:#0d0919;
@@ -256,6 +256,18 @@ kbd{font-family:inherit;font-size:11px;border:1px solid var(--line2);border-bott
   cursor:pointer;transition:all .3s;margin-bottom:10px}
 .col-add:hover{background:rgba(251,191,36,.1);border-color:#fbbf24;transform:translateY(-1px)}
 
+/* ---------- 配方模式切换 ---------- */
+.mode-tabs{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
+.mode-tab{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:12px 20px;border-radius:16px;
+  background:var(--surface);border:1px solid var(--line);color:var(--dim);cursor:pointer;
+  transition:all .3s var(--spring);text-align:left;min-width:150px}
+.mode-tab b{font-size:15px;font-weight:800}
+.mode-tab small{font-size:11px;color:var(--dimmer);letter-spacing:.04em}
+.mode-tab:hover{border-color:var(--line2);color:var(--txt);transform:translateY(-2px)}
+.mode-tab.on{background:var(--grad);color:#160b2e;border-color:transparent;
+  box-shadow:0 10px 26px -8px rgba(167,139,250,.55)}
+.mode-tab.on small{color:rgba(22,11,46,.65)}
+
 /* ---------- 全体系增删改按钮 ---------- */
 .crud{display:inline-flex;gap:4px;opacity:0;transition:opacity .2s;vertical-align:middle}
 .dom-card>.crud,.l1-card>.crud{position:absolute;top:9px;right:9px}
@@ -299,3 +311,22 @@ kbd{font-family:inherit;font-size:11px;border:1px solid var(--line2);border-bott
 .col-cloud::-webkit-scrollbar-thumb{background:var(--line2);border-radius:99px}
 .col-cloud .chip{font-size:12.5px;padding:7px 12px}
 .empty-hint{width:100%;text-align:center;color:var(--dimmer);font-size:12.5px;padding:18px 0;border:1px dashed var(--line);border-radius:12px}
+
+/* 衍生创建提示条 */
+#spawnTip{position:relative;display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;background:rgba(167,139,250,.08);
+  border:1px solid rgba(167,139,250,.3);border-radius:12px;padding:11px 38px 11px 14px;font-size:12.5px;
+  line-height:1.7;color:var(--txt);margin-bottom:16px}
+#spawnTip .st-b{color:#34d399;font-weight:700}
+#spawnTip .st-m{color:#fbbf24;font-weight:700}
+#spawnTip b{color:#fbbf24}
+#spawnTip .st-x{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:7px;border:1px solid var(--line);
+  background:transparent;color:var(--dim);font-size:11px;cursor:pointer}
+#spawnTip .st-x:hover{color:var(--txt);border-color:var(--dim)}
+
+/* 灵感方向模式徽章 */
+.dm-badges{display:inline-flex;gap:5px;margin-left:9px;vertical-align:2px}
+.dm-badge{font-size:10px;font-weight:700;letter-spacing:.06em;padding:2.5px 8px;border-radius:99px;line-height:1.4}
+.dm-badge.all{background:rgba(167,139,250,.18);color:#c4b5fd;border:1px solid rgba(167,139,250,.35)}
+.dm-badge.story{background:rgba(96,165,250,.14);color:#93c5fd;border:1px solid rgba(96,165,250,.32)}
+.dm-badge.music{background:rgba(244,114,182,.13);color:#f9a8d4;border:1px solid rgba(244,114,182,.32)}
+.dm-badge.video{background:rgba(45,212,191,.13);color:#5eead4;border:1px solid rgba(45,212,191,.3)}

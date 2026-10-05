@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>创作工作台 · 灵感工作台</title>
+<meta name="description" content="小说、音乐、短视频三模块创作工作台：分章写作、大纲世界观、音乐结构风格、分镜脚本，数据存在你自己的 GitHub 私有仓库。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237c3aed'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white'>叙</text></svg>">
+<link rel="stylesheet" href="assets/style.css?v=17">
+<style>
+/* 工作台专属 */
+.wb-tabs{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
+.wb-tab{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:12px 22px;border-radius:16px;
+  background:var(--surface);border:1px solid var(--line);color:var(--dim);cursor:pointer;transition:all .3s var(--spring);text-align:left;min-width:130px}
+.wb-tab b{font-size:15px;font-weight:800}
+.wb-tab small{font-size:11px;color:var(--dimmer)}
+.wb-tab:hover{border-color:var(--line2);color:var(--txt);transform:translateY(-2px)}
+.wb-tab.on{background:var(--grad);color:#160b2e;border-color:transparent;box-shadow:0 10px 26px -8px rgba(167,139,250,.55)}
+.wb-tab.on small{color:rgba(22,11,46,.65)}
+.wb-main{display:grid;grid-template-columns:250px 1fr;gap:16px;margin-top:18px;align-items:start}
+@media(max-width:900px){.wb-main{grid-template-columns:1fr}}
+.wb-side{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:12px;position:sticky;top:calc(var(--nav-h) + 16px)}
+.wb-side h4{font-size:11px;letter-spacing:.2em;color:var(--vio);margin:4px 6px 10px}
+.wb-proj{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:12px;cursor:pointer;
+  font-size:14px;color:var(--dim);border:1px solid transparent;transition:all .2s;position:relative}
+.wb-proj:hover{color:var(--txt);background:rgba(167,139,250,.06)}
+.wb-proj.on{color:var(--txt);background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.3)}
+.wb-proj .n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wb-proj .crud{opacity:1}
+.wb-proj .crud button{width:18px;height:18px;font-size:10px}
+.wb-editor{min-width:0}
+.wb-empty{color:var(--dimmer);font-size:14px;padding:60px 0;text-align:center}
+.wb-field{margin-bottom:18px}
+.wb-field>span{display:block;font-size:12px;letter-spacing:.14em;color:var(--vio);font-weight:700;margin-bottom:8px}
+.wb-input,.wb-area,.wb-select{width:100%;background:rgba(8,5,18,.55);border:1px solid var(--line);border-radius:12px;
+  color:var(--txt);font-size:14px;padding:11px 14px;outline:none;transition:border-color .25s;font-family:inherit}
+.wb-area{min-height:110px;resize:vertical;line-height:1.8}
+.wb-input:focus,.wb-area:focus,.wb-select:focus{border-color:var(--vio)}
+.wb-select{appearance:none;cursor:pointer}
+.wb-chips{display:flex;flex-wrap:wrap;gap:8px}
+.wb-chips .chip{font-size:12.5px}
+.wb-chips .chip.on{background:var(--grad);color:#160b2e;border-color:transparent;font-weight:700}
+.wb-name{font-size:22px;font-weight:900;background:transparent;border:none;border-bottom:2px solid var(--line);
+  color:var(--txt);padding:4px 2px;width:100%;outline:none;margin-bottom:20px;font-family:inherit}
+.wb-name:focus{border-color:var(--vio)}
+.wb-split{display:grid;grid-template-columns:200px 1fr;gap:14px}
+@media(max-width:760px){.wb-split{grid-template-columns:1fr}}
+.wb-chlist{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:10px;max-height:560px;overflow-y:auto}
+.wb-ch{display:flex;align-items:center;gap:6px;padding:9px 10px;border-radius:10px;font-size:13px;color:var(--dim);
+  cursor:pointer;border:1px solid transparent;transition:all .2s}
+.wb-ch:hover{color:var(--txt);background:rgba(167,139,250,.06)}
+.wb-ch.on{color:var(--txt);background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.3)}
+.wb-ch .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wb-ch .crud{opacity:1}.wb-ch .crud button{width:18px;height:18px;font-size:10px}
+.wb-wordc{font-size:11px;color:var(--dimmer);margin-top:6px;letter-spacing:.06em}
+.wb-shot{width:100%;border-collapse:collapse;font-size:13px}
+.wb-shot th{font-size:11px;letter-spacing:.1em;color:var(--dimmer);text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+.wb-shot td{padding:6px 6px 6px 0;border-bottom:1px solid var(--line);vertical-align:top}
+.wb-shot input,.wb-shot select{background:rgba(8,5,18,.55);border:1px solid var(--line);border-radius:9px;color:var(--txt);
+  font-size:13px;padding:7px 10px;outline:none;width:100%;font-family:inherit}
+.wb-shot input:focus,.wb-shot select:focus{border-color:var(--vio)}
+.wb-shot .num{color:var(--dimmer);font-size:12px;width:30px}
+.wb-shot .dur{width:64px}
+.wb-shot .crud{opacity:1;white-space:nowrap}
+.wb-shot .crud button{width:20px;height:20px;font-size:10px}
+.wb-charrow{display:grid;grid-template-columns:150px 1fr auto;gap:8px;margin-bottom:8px;align-items:start}
+.wb-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+.wb-savest{font-size:11.5px;color:var(--dimmer);letter-spacing:.04em;margin-left:auto;align-self:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker rise">CREATION WORKBENCH</div>
+  <h1 class="title rise"><span class="grad-t" data-chars>创作工作台</span></h1>
+  <p class="lead rise" style="margin-top:14px;font-size:14.5px">从「抽到一条好配方」到「写出一个作品」的中间地带。<br>项目数据存在<b>你自己的私有仓库</b>（或本浏览器），谁也看不到。</p>
+
+  <div class="wb-tabs rise" id="wbTabs"></div>
+  <div class="wb-main">
+    <aside class="wb-side rise" id="wbSide"></aside>
+    <section class="wb-editor rise" id="wbEditor"></section>
+  </div>
+</div>
+
+<script src="assets/data.js?v=17"></script>
+<script src="assets/common.js?v=17"></script>
+<script src="assets/cloud.js?v=17"></script>
+<script>
+initPage('workbench.html');
+
+/* ---------- 状态 ---------- */
+const KINDS=WB_KINDS; /* 定义在 data.js，全站统一 */
+const cur={kind:'novel',sel:{novel:null,music:null,video:null}};
+let cache=loadWB();
+let saveTimer=null,selfSave=0;
+function commit(){selfSave=Date.now();if(cloudOn())SMCloud.saveWB(cache);else localStorage.setItem(WB_KEY,JSON.stringify(cache));} /* 本地写入标记，用于跳过自己触发的云回环 */
+function scheduleSave(){
+  $('#saveSt')&&($('#saveSt').textContent='编辑中…');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{commit();$('#saveSt')&&($('#saveSt').textContent=SMCloud.isOn()?'已同步到私有仓库':'已保存到本浏览器');},800);
+}
+function flushNow(){clearTimeout(saveTimer);commit();const s=$('#saveSt');if(s)s.textContent=SMCloud.isOn()?'已同步到私有仓库':'已保存到本浏览器';}
+addEventListener('pagehide',flushNow);
+const tpl=wbNew; /* 共享工厂（含 src 来源配方字段） */
+const listOf=kind=>cache[kind+'s'];
+const curProj=()=>{const l=listOf(cur.kind);return l.find(p=>p.id===cur.sel[cur.kind])||l[0]||null;};
+const projKind=p=>cur.kind;
+
+/* ---------- 模块 tabs + 项目列表 ---------- */
+function paintTabs(){
+  $('#wbTabs').innerHTML=Object.entries(KINDS).map(([k,n])=>`
+    <button class="wb-tab ${cur.kind===k?'on':''}" data-kind="${k}"><b>${n}</b><small>${k==='novel'?'分章写作 · 大纲世界观':k==='music'?'主题结构 · 乐器风格':'故事分镜 · 脚本'}</small></button>`).join('');
+}
+function paintSide(){
+  const l=listOf(cur.kind);
+  $('#wbSide').innerHTML=`<h4>${KINDS[cur.kind]}项目 · ${l.length}</h4>
+    ${l.map(p=>`<div class="wb-proj ${p.id===cur.sel[cur.kind]?'on':''}" data-pid="${p.id}">
+      <span class="n">${esc(p.name)}</span>
+      <span class="crud">
+        <button data-wp-edit="${p.id}" title="重命名">✎</button>
+        <button data-wp-del="${p.id}" class="del" title="删除">✕</button>
+      </span></div>`).join('')}
+    <div class="add-card rip" data-wp-add style="min-height:44px;margin-top:8px;font-size:13.5px;font-weight:700">＋ 新建${KINDS[cur.kind]}项目</div>`;
+  if(typeof renderDock==='function')renderDock(); /* 底部配方托盘跟随当前项目 */
+}
+$('#wbTabs').addEventListener('click',e=>{
+  const t=e.target.closest('.wb-tab');if(!t)return;
+  cur.kind=t.dataset.kind;
+  try{localStorage.setItem('sm_wb_kind',cur.kind);}catch(_){}
+  paintTabs();paintSide();paintEditor();
+});
+$('#wbSide').addEventListener('click',async e=>{
+  if(e.target.closest('[data-wp-add]')){
+    const p=tpl(cur.kind);
+    listOf(cur.kind).unshift(p);
+    cur.sel[cur.kind]=p.id;
+    commit();paintSide();paintEditor();
+    toast('已创建，开写吧');return;
+  }
+  const ed=e.target.closest('[data-wp-edit]');
+  if(ed){
+    const p=listOf(cur.kind).find(x=>x.id===ed.dataset.wpEdit);if(!p)return;
+    SMCloud.openModal({title:'重命名项目',okText:'保存',
+      body:`<label class="sm-field"><span>项目名称</span><input id="smIn" value="${esc(p.name)}" autocomplete="off"></label>`,
+      onOk:m=>{const v=m.querySelector('#smIn').value.trim();if(!v)return false;p.name=v;commit();paintSide();if(cur.sel[cur.kind]===p.id)paintEditor();}});
+    return;
+  }
+  const del=e.target.closest('[data-wp-del]');
+  if(del){
+    const p=listOf(cur.kind).find(x=>x.id===del.dataset.wpDel);if(!p)return;
+    SMCloud.openModal({title:'删除项目',okText:'确认删除',
+      body:`<p class="sm-tip">将永久删除「<b>${esc(p.name)}</b>」及其全部内容。此操作不可恢复。</p>`,
+      onOk:()=>{const k=cur.kind+'s';cache[k]=cache[k].filter(x=>x.id!==p.id);
+        if(cur.sel[cur.kind]===p.id)cur.sel[cur.kind]=cache[k][0]?.id||null;
+        commit();paintSide();paintEditor();toast('已删除');}});
+    return;
+  }
+  const it=e.target.closest('.wb-proj');
+  if(it){cur.sel[cur.kind]=it.dataset.pid;paintSide();paintEditor();}
+});
+/* ---------- 编辑器分发 ---------- */
+function paintEditor(){
+  const p=curProj();
+  if(!p){$('#wbEditor').innerHTML=`<div class="wb-empty">还没有${KINDS[cur.kind]}项目——点左侧「＋ 新建」开始。<br>也可以先去「灵感组合」抽一条配方，再回来立项。</div>`;return;}
+  const srcChips=p.src&&p.src.length?`<div class="wb-field"><span>来源配方（从灵感组合送进来的那条）</span>
+    <div style="display:flex;flex-wrap:wrap;gap:7px">${p.src.map(x=>`<span class="chip" style="cursor:default;pointer-events:none">
+      <span class="src">${CAT_NAME[x.cat]||x.cat}</span>${esc(x.cat==='sit'?x.dom+'·'+x.tag:x.tag)}</span>`).join('')}</div></div>`:'';
+  const others=Object.keys(WB_KINDS).filter(k=>k!==cur.kind);
+  const bar=`<div class="wb-bar">
+    <button class="btn btn-ghost btn-sm rip" data-import>📥 用当前配方篮替换导入</button>
+    <button class="btn btn-ghost btn-sm rip" data-spawn>➕ 以此项目新建${others.map(k=>WB_KINDS[k]).join(' / ')}项目</button>
+    <span class="wb-savest" id="saveSt">${SMCloud.isOn()?'已同步到私有仓库':'已保存到本浏览器'}</span></div>${srcChips}`;
+  const name=`<input class="wb-name" id="wbName" value="${esc(p.name)}" maxlength="30" autocomplete="off">`;
+  if(cur.kind==='novel')$('#wbEditor').innerHTML=bar+name+novelHTML(p);
+  else if(cur.kind==='music')$('#wbEditor').innerHTML=bar+name+musicHTML(p);
+  else $('#wbEditor').innerHTML=bar+name+videoHTML(p);
+  bindEditor(p);
+}
+function field(label,inner){return `<div class="wb-field"><span>${label}</span>${inner}</div>`;}
+
+/* ---------- 小说：设定 + 章节 ---------- */
+function novelHTML(p){
+  const ch=p.chapters[p.cur]||p.chapters[0];
+  const chars=p.chars.map((c,i)=>`<div class="wb-charrow">
+      <input class="wb-input" data-ch-name="${i}" value="${esc(c.name)}" placeholder="人物名">
+      <input class="wb-input" data-ch-note="${i}" value="${esc(c.note)}" placeholder="身份 / 与主角的关系 / 一句话设定…">
+      <span class="crud"><button data-ch-del="${i}" class="del" title="删除">✕</button></span>
+    </div>`).join('');
+  return `
+  <div class="wb-split">
+    <div>
+      <div class="wb-chlist" id="chList">
+        ${p.chapters.map((c,i)=>`<div class="wb-ch ${i===p.cur?'on':''}" data-ch-sel="${i}">
+          <span class="t">${String(i+1).padStart(2,'0')} · ${esc(c.t||'未命名')}</span>
+          <span class="crud">
+            <button data-ch-up="${i}" title="上移">↑</button>
+            <button data-ch-dn="${i}" title="下移">↓</button>
+            <button data-ch-rm="${i}" class="del" title="删除本章">✕</button>
+          </span></div>`).join('')}
+      </div>
+      <button class="btn btn-ghost btn-sm rip" data-ch-add style="width:100%;margin-top:8px">＋ 新增一章</button>
+    </div>
+    <div>
+      ${ch?`
+      <input class="wb-input" id="chTitle" value="${esc(ch.t)}" placeholder="章节标题" style="font-weight:700;margin-bottom:10px" autocomplete="off">
+      <textarea class="wb-area" id="chBody" style="min-height:300px" placeholder="正文……">${esc(ch.c)}</textarea>
+      <div class="wb-wordc" id="chWords"></div>`:'<div class="wb-empty">点左侧新增第一章</div>'}
+    </div>
+  </div>
+  <hr style="border:none;border-top:1px solid var(--line);margin:26px 0">
+  ${field('项目大纲（主线 / 分卷 / 结局方向）',`<textarea class="wb-area" id="f-outline" placeholder="故事从哪开始，经过哪些阶段，最终落在哪……">${esc(p.outline)}</textarea>`)}
+  ${field('项目规则（文风 / 禁忌 / 更新约定）',`<textarea class="wb-area" id="f-rules" placeholder="例如：第三人称限知视角；每章至少一个共情点；不写穿越金手指……">${esc(p.rules)}</textarea>`)}
+  ${field('世界观设定',`<textarea class="wb-area" id="f-world" placeholder="时代、地点、规则、势力……只展示 10%，藏住 90%。">${esc(p.world)}</textarea>`)}
+  ${field('人物关系',`<div id="charRows">${chars||'<div class="wb-empty" style="padding:14px 0">还没有人物，点下方添加</div>'}</div>
+    <button class="btn btn-ghost btn-sm rip" data-char-add>＋ 添加人物</button>`)}
+  `;
+}
+
+/* ---------- 音乐：主题/结构/乐器/风格/旋律 ---------- */
+function musicHTML(p){
+  return `
+  ${field('主题与故事（这首歌讲什么）',`<textarea class="wb-area" id="m-theme" style="min-height:80px" placeholder="一句话主题 + 背景故事……">${esc(p.theme)}</textarea>`)}
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+    ${field('歌曲结构（选预设再改）',`<select class="wb-select" id="m-struct-sel">
+        ${WB.music.structs.map((s,i)=>`<option value="${i}" ${s.tpl===p.structure?'selected':''}>${s.name}</option>`).join('')}
+        <option value="custom" ${!WB.music.structs.some(s=>s.tpl===p.structure)?'selected':''}>自定义</option>
+      </select>`)}
+    ${field('旋律备忘（音域 / 节奏 / 参考）',`<textarea class="wb-area" id="m-melody" style="min-height:78px" placeholder="例如：副歌高音域大跳；BPM 72；主歌平缓叙事……">${esc(p.melody)}</textarea>`)}
+  </div>
+  ${field('结构细化（段落能量：主歌蓄势→导歌爬升→副歌峰值→桥段转换）',`<textarea class="wb-area" id="m-struct" style="min-height:70px">${esc(p.structure)}</textarea>`)}
+  ${field('乐器配置（点选）',`<div class="wb-chips" id="m-inst">${WB.music.insts.map(t=>`<span class="chip rip ${p.inst.includes(t)?'on':''}" data-inst="${esc(t)}">${esc(t)}</span>`).join('')}</div>`)}
+  ${field('流派（点选）',`<div class="wb-chips" id="m-style">${WB.music.styles.map(t=>`<span class="chip rip ${(p.style||[]).includes(t)?'on':''}" data-style="${esc(t)}">${esc(t)}</span>`).join('')}</div>`)}
+  ${field('氛围（点选）',`<div class="wb-chips" id="m-mood">${WB.music.moods.map(t=>`<span class="chip rip ${(p.mood||[]).includes(t)?'on':''}" data-mood="${esc(t)}">${esc(t)}</span>`).join('')}</div>`)}
+  `;
+}
+
+/* ---------- 短视频：主题/故事/分镜表 ---------- */
+function videoHTML(p){
+  const rows=p.shots.map((s,i)=>`<tr>
+      <td class="num">${i+1}</td>
+      <td style="width:86px"><select data-shot-jing="${i}">${WB.video.jings.map(j=>`<option ${j===s.jing?'selected':''}>${j}</option>`).join('')}</select></td>
+      <td><input data-shot-scene="${i}" value="${esc(s.scene)}" placeholder="画面内容：谁在哪做什么，镜头怎么动…"></td>
+      <td><input data-shot-line="${i}" value="${esc(s.line)}" placeholder="台词 / 字幕"></td>
+      <td class="dur"><input type="number" min="1" max="60" data-shot-dur="${i}" value="${s.dur}"></td>
+      <td><span class="crud">
+        <button data-shot-up="${i}" title="上移">↑</button>
+        <button data-shot-dn="${i}" title="下移">↓</button>
+        <button data-shot-rm="${i}" class="del" title="删除">✕</button>
+      </span></td>
+    </tr>`).join('');
+  return `
+  ${field('故事主题（一句话）',`<input class="wb-input" id="v-theme" value="${esc(p.theme)}" placeholder="例如：一个迟到了十年的道歉">`)}
+  ${field('故事（起因-经过-反转，口播或旁白底稿）',`<textarea class="wb-area" id="v-story" style="min-height:140px">${esc(p.story)}</textarea>`)}
+  ${field('分镜脚本',`<table class="wb-shot"><thead><tr><th>#</th><th>景别</th><th>画面</th><th>台词/字幕</th><th>秒</th><th></th></tr></thead>
+    <tbody>${rows}</tbody></table>
+    <button class="btn btn-ghost btn-sm rip" data-shot-add style="margin-top:10px">＋ 添加镜头</button>`)}
+  `;
+}
+
+/* 衍生创建后的「已带入 / 待补充」提示条 */
+function showSpawnTip(r){
+  $('#spawnTip')?.remove();
+  const box=document.createElement('div');
+  box.id='spawnTip';
+  box.innerHTML=`<span class="st-b">✓ 已带入</span> ${esc(r.fromName)} → ${r.brought.map(esc).join('；')||'（无）'}
+    <span class="st-m" style="margin-left:12px">⚠ 待补充</span> <b>${r.missing.map(esc).join(' / ')||'（无）'}</b>
+    <button class="st-x rip" title="知道了">✕</button>`;
+  box.querySelector('.st-x').addEventListener('click',()=>box.remove());
+  $('#wbEditor').prepend(box);
+}
+/* ---------- 编辑器事件绑定 ---------- */
+function bindEditor(p){
+  /* 项目名 */
+  $('#wbName').addEventListener('input',e=>{p.name=e.target.value;scheduleSave();
+    const el=document.querySelector(`.wb-proj[data-pid="${p.id}"] .n`);if(el)el.textContent=p.name||'未命名';});
+  /* 从配方导入（替换来源配方） */
+  document.querySelector('[data-import]').addEventListener('click',()=>{
+    const pf=loadPF();
+    if(!pf.length)return toast('配方篮是空的——先去「灵感组合」抽一条或手动添加');
+    const text=cur.kind==='novel'?pfText(pf):pfOutText(pf,cur.kind);
+    if(cur.kind==='novel')p.outline=(p.outline?p.outline+'\n\n':'')+'【配方】'+text;
+    else p.theme=text;
+    p.src=pf.slice();
+    paintEditor();scheduleSave();
+    toast('已把当前配方写入'+(cur.kind==='novel'?'大纲':'主题'));
+  });
+  /* 衍生创建：以本项目为底，生成另一类型项目；缺的模式专属标签由人选定后带入 */
+  document.querySelector('[data-spawn]').addEventListener('click',()=>{
+    const others=Object.keys(WB_KINDS).filter(k=>k!==cur.kind);
+    const NEEDED={music:[['view','视角'],[ 'line','金句方向']],video:[['hook','钩子']]};
+    SMCloud.openModal({
+      title:'以此项目新建',
+      okText:'创建并切换',
+      body:`<p class="sm-tip">把「<b>${esc(p.name)}</b>」的内容映射成新类型项目（大纲 ⇄ 主题/故事），来源配方一并继承，原项目不受影响。</p>
+      <div style="display:flex;gap:10px;margin-top:12px">
+        ${others.map((k,i)=>`<label data-spk="${k}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:12px;border:1px solid var(--line);cursor:pointer;font-size:14px;color:${i===0?'var(--txt)':'var(--dim)'};${i===0?'background:rgba(167,139,250,.15);border-color:var(--vio);font-weight:700':''}">
+          <input type="radio" name="spk" value="${k}" ${i===0?'checked':''} style="accent-color:#a78bfa"> ${WB_KINDS[k]}</label>`).join('')}
+      </div>
+      <div id="spNeed" style="margin-top:12px"></div>`,
+      onReady:m=>{
+        const needBox=m.querySelector('#spNeed');
+        const renderNeed=()=>{
+          const k=m.querySelector('input[name=spk]:checked').value;
+          const needs=(NEEDED[k]||[]).filter(([cat])=>!(p.src||[]).some(x=>x.cat===cat));
+          if(!needs.length){needBox.innerHTML='';return;}
+          needBox.innerHTML='<p style="font-size:12.5px;color:var(--dim);margin-bottom:8px">⚠ 该类型需要的标签在当前配方里没有，点选带入（可多选）：</p>'
+            +needs.map(([cat,label])=>`<div style="margin-bottom:8px"><span style="font-size:12px;color:var(--dimmer);letter-spacing:.08em">${label}</span>
+              <div class="wb-chips" data-need="${cat}" style="margin-top:5px">${POOLS[cat].map(t=>`<span class="chip rip" data-ptag="${esc(t)}">${esc(t)}</span>`).join('')}</div></div>`).join('');
+        };
+        needBox.addEventListener('click',e=>{
+          const c=e.target.closest('[data-ptag]');if(!c)return;
+          c.classList.toggle('on');
+        });
+        m.addEventListener('change',()=>{
+          const k=m.querySelector('input[name=spk]:checked').value;
+          m.querySelectorAll('[data-spk]').forEach(l=>{
+            const on=l.dataset.spk===k;
+            l.style.background=on?'rgba(167,139,250,.15)':'';
+            l.style.borderColor=on?'var(--vio)':'';
+            l.style.color=on?'var(--txt)':'var(--dim)';
+            l.style.fontWeight=on?'700':'';
+          });
+          renderNeed();
+        });
+        renderNeed();
+      },
+      onOk:m=>{
+        const k=m.querySelector('input[name=spk]:checked').value;
+        const extra=[];
+        m.querySelectorAll('[data-need]').forEach(box=>{
+          const cat=box.dataset.need;
+          box.querySelectorAll('[data-ptag].on').forEach(c=>extra.push({cat,tag:c.dataset.ptag,dom:''}));
+        });
+        const r=spawnProj(p,cur.kind,k,extra);
+        cache=loadWB(); /* spawnProj 写的是存储层，刷新工作台缓存 */
+        cur.kind=k;cur.sel[k]=r.proj;
+        try{localStorage.setItem('sm_wb_kind',k);}catch(_){}
+        paintTabs();paintSide();paintEditor();commit();
+        showSpawnTip(r);
+        toast('已创建'+WB_KINDS[k]+'项目');
+      }});
+  });
+  if(cur.kind==='novel')bindNovel(p);
+  else if(cur.kind==='music')bindMusic(p);
+  else bindVideo(p);
+}
+function bindNovel(p){
+  if(!p.chapters.length)return; // 章节删光时编辑器显示空态，无需绑定
+  const ch=()=>p.chapters[p.cur];
+  const words=()=>{const c=ch();$('#chWords').textContent=c?('本章 '+c.c.replace(/\s/g,'').length+' 字 · 共 '+p.chapters.length+' 章'):'';};
+  words();
+  $('#chTitle').addEventListener('input',e=>{if(ch()){ch().t=e.target.value;scheduleSave();
+    const el=document.querySelector(`.wb-ch[data-ch-sel="${p.cur}"] .t`);if(el)el.textContent=String(p.cur+1).padStart(2,'0')+' · '+(e.target.value||'未命名');}});
+  $('#chBody').addEventListener('input',e=>{if(ch()){ch().c=e.target.value;scheduleSave();words();}});
+  ['outline','rules','world'].forEach(k=>{
+    $('#f-'+k).addEventListener('input',e=>{p[k]=e.target.value;scheduleSave();});
+  });
+  const rows=$('#charRows');
+}
+function bindMusic(p){
+  $('#m-theme').addEventListener('input',e=>{p.theme=e.target.value;scheduleSave();});
+  $('#m-melody').addEventListener('input',e=>{p.melody=e.target.value;scheduleSave();});
+  $('#m-struct').addEventListener('input',e=>{p.structure=e.target.value;scheduleSave();
+    $('#m-struct-sel').value='custom';});
+  $('#m-struct-sel').addEventListener('change',e=>{
+    if(e.target.value!=='custom'){p.structure=WB.music.structs[+e.target.value].tpl;paintEditor();commit();}});
+  $('#m-inst').addEventListener('click',e=>{
+    const c=e.target.closest('[data-inst]');if(!c)return;
+    const t=c.dataset.inst;let i=p.inst.indexOf(t);
+    if(i>=0)p.inst.splice(i,1);else p.inst.push(t);
+    c.classList.toggle('on');scheduleSave();});
+  $('#m-style').addEventListener('click',e=>{
+    const c=e.target.closest('[data-style]');if(!c)return;
+    const t=c.dataset.style;let i=p.style.indexOf(t);
+    if(i>=0)p.style.splice(i,1);else p.style.push(t);
+    c.classList.toggle('on');scheduleSave();});
+  $('#m-mood').addEventListener('click',e=>{ /* 氛围：与流派分开选 */
+    const c=e.target.closest('[data-mood]');if(!c)return;
+    p.mood=p.mood||[];
+    const t=c.dataset.mood;let i=p.mood.indexOf(t);
+    if(i>=0)p.mood.splice(i,1);else p.mood.push(t);
+    c.classList.toggle('on');scheduleSave();});
+}
+function bindVideo(p){
+  $('#v-theme').addEventListener('input',e=>{p.theme=e.target.value;scheduleSave();});
+  $('#v-story').addEventListener('input',e=>{p.story=e.target.value;scheduleSave();});
+}
+
+/* ---------- 结构性操作：全局单次委托（章节/人物/分镜），避免重复绑定 ---------- */
+$('#wbEditor').addEventListener('click',e=>{
+  const p=curProj();if(!p)return;
+  const q=s=>e.target.closest(s);let m;
+  if(cur.kind==='novel'){
+    if(m=q('[data-ch-add]')){p.chapters.push({t:'第'+(p.chapters.length+1)+'章',c:''});p.cur=p.chapters.length-1;commit();paintEditor();return;}
+    if(m=q('[data-ch-rm]')){
+      SMCloud.openModal({title:'删除章节',okText:'确认删除',
+        body:`<p class="sm-tip">将永久删除第 ${+m.dataset.chRm+1} 章「<b>${esc(p.chapters[+m.dataset.chRm].t)}</b>」（${p.chapters[+m.dataset.chRm].c.replace(/\s/g,'').length} 字）。此操作不可恢复。</p>`,
+        onOk:()=>{p.chapters.splice(+m.dataset.chRm,1);p.cur=Math.min(p.cur,p.chapters.length-1);commit();paintEditor();}});
+      return;}
+    if(m=q('[data-ch-up]')){const i=+m.dataset.chUp;if(i>0){[p.chapters[i-1],p.chapters[i]]=[p.chapters[i],p.chapters[i-1]];if(p.cur===i)p.cur=i-1;else if(p.cur===i-1)p.cur=i;commit();paintEditor();}return;}
+    if(m=q('[data-ch-dn]')){const i=+m.dataset.chDn;if(i<p.chapters.length-1){[p.chapters[i+1],p.chapters[i]]=[p.chapters[i],p.chapters[i+1]];if(p.cur===i)p.cur=i+1;else if(p.cur===i+1)p.cur=i;commit();paintEditor();}return;}
+    if(m=q('[data-ch-sel]')){p.cur=+m.dataset.chSel;paintEditor();return;}
+    if(m=q('[data-char-add]')){p.chars.push({name:'',note:''});commit();paintEditor();setTimeout(()=>{const ins=document.querySelectorAll('[data-ch-name]');ins[ins.length-1]&&ins[ins.length-1].focus();},50);return;}
+    if(m=q('[data-ch-del]')){p.chars.splice(+m.dataset.chDel,1);commit();paintEditor();return;}
+  }else if(cur.kind==='video'){
+    if(m=q('[data-shot-add]')){p.shots.push({jing:'中景',scene:'',line:'',dur:3});commit();paintEditor();return;}
+    if(m=q('[data-shot-rm]')){p.shots.splice(+m.dataset.shotRm,1);commit();paintEditor();return;}
+    if(m=q('[data-shot-up]')){const i=+m.dataset.shotUp;if(i>0){[p.shots[i-1],p.shots[i]]=[p.shots[i],p.shots[i-1]];commit();paintEditor();}return;}
+    if(m=q('[data-shot-dn]')){const i=+m.dataset.shotDn;if(i<p.shots.length-1){[p.shots[i+1],p.shots[i]]=[p.shots[i],p.shots[i+1]];commit();paintEditor();}return;}
+  }
+});
+$('#wbEditor').addEventListener('input',e=>{
+  const p=curProj();if(!p)return;
+  const t=e.target,d=t.dataset;
+  if(cur.kind==='novel'){
+    if(d.chName!=null){p.chars[+d.chName].name=t.value;scheduleSave();}
+    if(d.chNote!=null){p.chars[+d.chNote].note=t.value;scheduleSave();}
+  }else if(cur.kind==='video'){
+    if(d.shotJing!=null){p.shots[+d.shotJing].jing=t.value;scheduleSave();}
+    if(d.shotScene!=null){p.shots[+d.shotScene].scene=t.value;scheduleSave();}
+    if(d.shotLine!=null){p.shots[+d.shotLine].line=t.value;scheduleSave();}
+    if(d.shotDur!=null){p.shots[+d.shotDur].dur=+t.value||1;scheduleSave();}
+  }
+});
+
+/* ---------- 云同步：跳过自己写入触发的回环；首次连接把本浏览器项目并入云端 ---------- */
+let mergedLS=false;
+SMCloud.onData(()=>{
+  if(!SMCloud.isOn())return;
+  if(!mergedLS){
+    mergedLS=true;
+    try{
+      const ls=JSON.parse(localStorage.getItem(WB_KEY)||'null');
+      if(ls){
+        const remote=JSON.parse(JSON.stringify(SMCloud.data.wb));
+        let added=false;
+        ['novels','musics','videos'].forEach(k=>{
+          (ls[k]||[]).forEach(p=>{if(p&&p.id&&!remote[k].some(x=>x.id===p.id)){remote[k].unshift(p);added=true;}});
+        });
+        localStorage.removeItem(WB_KEY);
+        if(added){cache=remote;commit();toast('已把本浏览器里的工作台项目并入私有仓库');paintSide();paintEditor();return;}
+      }
+    }catch(e){}
+  }
+  if(Date.now()-selfSave<3000)return;
+  cache=loadWB();paintSide();paintEditor();
+});
+/* 记住上次模块；深链：从灵感页「送去工作台」跳进来 ?kind=music&proj=xxx */
+(function(){
+  try{const k=localStorage.getItem('sm_wb_kind');if(k&&WB_KINDS[k])cur.kind=k;}catch(_){}
+  const sp=new URLSearchParams(location.search);
+  const k=sp.get('kind'),pid=sp.get('proj');
+  if(k&&WB_KINDS[k]&&cache[k+'s'].some(p=>p.id===pid)){cur.kind=k;cur.sel[k]=pid;try{localStorage.setItem('sm_wb_kind',k);}catch(_){}}
+  if(location.search)history.replaceState(null,'',location.pathname);
+})();
+paintTabs();paintSide();paintEditor();
+</script>
+</body>
+</html>

@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>灵感方向 · 灵感矩阵</title>
-<link rel="stylesheet" href="assets/style.css?v=8">
+<title>灵感方向 · 灵感工作台</title>
+<link rel="stylesheet" href="assets/style.css?v=17">
 <style>
-/* 矩阵页专属 */
+/* 灵感工作台·方向页专属 */
 .crumbs{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:26px;flex-wrap:wrap;min-height:22px}
 .crumb{padding:6px 15px;border-radius:99px;background:var(--surface);border:1px solid var(--line);color:var(--dim);cursor:pointer;transition:all .25s}
 .crumb:hover{color:var(--txt);border-color:var(--line2)}
@@ -55,11 +55,17 @@
   <div class="kicker rise">STORY DIRECTIONS</div>
   <h1 class="title rise"><span class="grad-t" data-chars>灵感方向</span></h1>
 
-  <div style="display:flex;justify-content:flex-end;margin-top:6px">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap">
+    <div class="mode-tabs" id="domTabs">
+      <button class="mode-tab on" data-dmode="story">故事模式</button>
+      <button class="mode-tab" data-dmode="music">音乐模式</button>
+      <button class="mode-tab" data-dmode="video">短视频模式</button>
+    </div>
     <button class="btn btn-ghost btn-sm rip" id="openSr">搜一搜 <kbd>/</kbd></button>
   </div>
+  <p class="rise" style="font-size:12.5px;color:var(--dimmer);margin-top:10px" id="domTabTip"></p>
 
-  <div class="crumbs" id="crumbs" style="margin-top:16px"></div>
+  <div class="crumbs" id="crumbs" style="margin-top:8px"></div>
   <div id="stage"></div>
 </div>
 
@@ -71,9 +77,9 @@
   <div class="sr-foot"><span>↑↓ 移动</span><span>↵ 跳过去</span><span>+ 直接入配方</span><span>esc 关闭</span></div>
 </div>
 
-<script src="assets/data.js?v=8"></script>
-<script src="assets/common.js?v=8"></script>
-<script src="assets/cloud.js?v=8"></script>
+<script src="assets/data.js?v=17"></script>
+<script src="assets/common.js?v=17"></script>
+<script src="assets/cloud.js?v=17"></script>
 <script>
 initPage('matrix.html');
 const stage=$('#stage'),crumbs=$('#crumbs');
@@ -96,14 +102,23 @@ crumbs.addEventListener('click',e=>{
   else{sel.dom=go;sel.l1=null;renderL1();}
 });
 
-/* ---------- 第一层：灵感方向（按"和谁的事"分组） ---------- */
-const domCard=d=>{
-  const i=DOMAINS.indexOf(d);
+/* ---------- 第一层：灵感方向（按创作模式分区，标识通用/专属） ---------- */
+const DM_KEY='sm_dommode';
+const getDMode=()=>{const m=localStorage.getItem(DM_KEY);return MODES.includes(m)?m:'story';};
+const setDMode=m=>{if(MODES.includes(m))localStorage.setItem(DM_KEY,m);};
+const domInMode=(d,m)=>(d.modes||['story','music','video']).includes(m);
+const MODE_BADGE={story:'故事',music:'音乐',video:'短视频'};
+function domBadges(d){
+  const ms=d.modes||['story','music','video'];
+  if(ms.length>=3)return `<span class="dm-badge all">通用</span>`;
+  return ms.map(m=>`<span class="dm-badge ${m}">${MODE_BADGE[m]||m}</span>`).join('');
+}
+const domCard=(d,i)=>{
   const n=flatSits(d).length;
   const samp=d.tree.length?(d.tree[0].tags?d.tree[0].tags.slice(0,2).join(' · '):(d.tree[0].groups?d.tree[0].groups[0].tags.slice(0,2).join(' · '):'')):'还没有内容';
   return `<div class="card dom-card rip" data-dom="${d.id}">
     <span class="idx">${String(i+1).padStart(2,'0')}</span>
-    <h3>${esc(d.name)}</h3>
+    <h3>${esc(d.name)}<span class="dm-badges">${domBadges(d)}</span></h3>
     <div class="cnt">${d.tree.length} 类 · ${n} 个情境</div>
     <div class="samp">${esc(samp)}…</div>
     <span class="crud">
@@ -114,22 +129,25 @@ const domCard=d=>{
 };
 function renderDomGrid(){
   renderCrumbs();
-  const grouped=new Set(GROUPS.flatMap(g=>g.ids));
-  const mine=DOMAINS.filter(d=>!grouped.has(d.id));
-  stage.innerHTML=GROUPS.map(g=>`
-    <div class="rise" style="margin-bottom:26px">
-      <div class="grp-name" style="margin:24px 0 14px">${g.name}</div>
-      <div class="dom-grid">${g.ids.map(id=>domCard(DOMAINS.find(x=>x.id===id))).join('')}</div>
-    </div>`).join('')
-    +(mine.length?`<div class="rise" style="margin-bottom:26px">
-      <div class="grp-name" style="margin:24px 0 14px">我的方向</div>
-      <div class="dom-grid">${mine.map(domCard).join('')}</div>
-    </div>`:'')
-    +`<div class="rise"><div class="dom-grid">
+  const m=getDMode();
+  const list=DOMAINS.filter(d=>domInMode(d,m));
+  $('#domTabTip').textContent=m==='story'
+    ?'故事模式可用全部方向：带「通用」徽章的三模式皆宜，其余为故事或短视频向'
+    :(m==='music'?'音乐模式适用方向：通用情感议题最适合写成歌，进灵感组合别忘了选视角与金句方向'
+    :'短视频模式适用方向：通用 + 短剧高频题材，进灵感组合别忘了选钩子');
+  stage.innerHTML=`<div class="rise"><div class="dom-grid">${list.map((d,i)=>domCard(d,i)).join('')}
       <div class="card dom-card add-card rip" data-adddom="1"><h3 style="font-size:17px">＋ 新建方向</h3><div class="cnt">创建你自己的灵感方向</div></div>
     </div></div>`;
   stagger();
 }
+$('#domTabs').addEventListener('click',e=>{
+  const t=e.target.closest('.mode-tab');if(!t)return;
+  setDMode(t.dataset.dmode);
+  $$('#domTabs .mode-tab').forEach(x=>x.classList.toggle('on',x===t));
+  renderDomGrid();
+});
+/* 初始化 tab 高亮 */
+$$('#domTabs .mode-tab').forEach(x=>x.classList.toggle('on',x.dataset.dmode===getDMode()));
 stage.addEventListener('click',e=>{
   if(e.target.closest('.crud')||e.target.closest('.grp-add')||e.target.closest('.add-card'))return; // 编辑按钮走 document 层
   const c=e.target.closest('.dom-card');
@@ -217,7 +235,26 @@ document.addEventListener('click',async e=>{
   /* ===== 方向 ===== */
   if(m=q('[data-adddom]')){
     if(!(await guard()))return;
-    nameModal('新建方向','方向名称','','例如：科幻、悬疑、复仇…',v=>{SMCloud.addDom(v);toast('方向已创建，点进去添加分类吧');});
+    SMCloud.openModal({
+      title:'新建方向',okText:'创建',
+      body:`<label class="sm-field"><span>方向名称</span><input id="smIn" placeholder="例如：科幻、电竞、宠物…" autocomplete="off"></label>
+        <div class="sm-field"><span>适用模式（不选则三模式通用）</span>
+          <div class="wb-chips" id="dmModeChips" style="margin-top:8px">${MODES.map(mm=>`<span class="chip rip on" data-mmode="${mm}">${MODE_BADGE[mm]}</span>`).join('')}</div>
+        </div>`,
+      onReady:m2=>{
+        m2.querySelector('#dmModeChips').addEventListener('click',e2=>{
+          const c=e2.target.closest('[data-mmode]');if(!c)return;
+          c.classList.toggle('on');
+        });
+      },
+      onOk:m2=>{
+        const v=m2.querySelector('#smIn').value.trim();
+        if(!v)return false;
+        const modes=[...m2.querySelectorAll('[data-mmode].on')].map(x=>x.dataset.mmode);
+        SMCloud.addDom(v,modes);
+        toast('方向已创建，点进去添加分类吧');
+      }});
+    return;
   }
   else if(m=q('[data-ed-dom]')){
     if(!(await guard()))return;

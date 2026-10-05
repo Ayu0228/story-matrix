@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>灵感矩阵 · 高频共情故事选题系统</title>
-<meta name="description" content="18个灵感方向、371个情境、541组人物关系、337个故事场景、10个转折词，把『想选题』变成『抽公式』。">
-<link rel="stylesheet" href="assets/style.css?v=8">
+<title>灵感工作台 · 高频共情故事选题系统</title>
+<meta name="description" content="26个灵感方向（共情故事+热门类型）、490+个情境、690+组人物关系、490+个故事场景、10+个转折词，把『想选题』变成『抽公式』。">
+<link rel="stylesheet" href="assets/style.css?v=17">
 <style>
 .stat-strip{display:flex;gap:0;align-items:baseline;flex-wrap:wrap;margin-top:54px;
   border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:20px 0}
@@ -31,60 +31,97 @@
       <span data-chars>抽一条公式。</span>
     </h1>
     <p class="lead rise" style="margin-top:24px;font-size:16px">
-      18 个灵感方向、371 个情境，配上人物关系、故事场景和 10 个转折词——灵感不靠憋，靠抽。
+      26 个灵感方向（共情故事 + 行业热门类型）、近 500 个情境，配上人物关系、故事场景和转折词——灵感不靠憋，靠抽。
     </p>
     <div class="rise" style="display:flex;gap:14px;margin-top:36px;flex-wrap:wrap">
       <a class="btn btn-pri rip" href="studio.html">🎲 抽一条 <span class="arr">→</span></a>
       <a class="btn btn-ghost rip" href="matrix.html">灵感方向</a>
     </div>
 
-    <!-- 今日配方 -->
+    <!-- 今日配方：三种模式各一条，按日固定 -->
     <div class="rise" style="margin-top:48px">
-      <div class="card" style="cursor:default;padding:24px 26px;max-width:680px">
-        <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap">
-          <b style="font-size:12px;letter-spacing:.26em;color:var(--vio)">今日配方</b>
-          <button class="btn btn-ghost btn-sm rip" id="reRoll">🎲 换一批</button>
-        </div>
-        <div id="heroPF" style="display:flex;flex-wrap:wrap;gap:8px;margin:15px 0 10px"></div>
-        <p id="heroSent" style="color:var(--dim);font-size:14px;line-height:1.8;min-height:1.5em"></p>
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px">
+        <b style="font-size:12px;letter-spacing:.26em;color:var(--vio)">今日配方</b>
+        <button class="btn btn-ghost btn-sm rip" id="reRoll">🎲 全部换一批</button>
       </div>
+      <div id="heroCards" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;max-width:1060px"></div>
     </div>
 
     <!-- 统计条 -->
-    <div class="stat-strip rise">
-      <span class="st"><span class="n grad-t">18</span><span class="l">个灵感方向</span></span>
-      <span class="st"><span class="n grad-t">371</span><span class="l">情境</span></span>
-      <span class="st"><span class="n grad-t">105</span><span class="l">类</span></span>
-      <span class="st"><span class="n grad-t">10</span><span class="l">转折词</span></span>
+    <div class="stat-strip rise" id="statStrip">
+      <span class="st"><span class="n grad-t" id="stDom">–</span><span class="l">个灵感方向</span></span>
+      <span class="st"><span class="n grad-t" id="stTag">–</span><span class="l">情境</span></span>
+      <span class="st"><span class="n grad-t" id="stL1">–</span><span class="l">类</span></span>
+      <span class="st"><span class="n grad-t" id="stMod">–</span><span class="l">转折词</span></span>
     </div>
 
     <!-- 入口 -->
     <div class="entries rise">
       <a class="entry rip" href="matrix.html"><span class="e-arr">→</span>灵感方向</a>
       <a class="entry rip" href="studio.html"><span class="e-arr">→</span>灵感组合</a>
+      <a class="entry rip" href="workbench.html"><span class="e-arr">→</span>创作工作台</a>
       <a class="entry rip" href="method.html"><span class="e-arr">→</span>怎么用</a>
     </div>
   </section>
 
 </div>
 
-<script src="assets/data.js?v=8"></script>
-<script src="assets/common.js?v=8"></script>
-<script src="assets/cloud.js?v=8"></script>
+<script src="assets/data.js?v=17"></script>
+<script src="assets/common.js?v=17"></script>
+<script src="assets/cloud.js?v=17"></script>
 <script>
 initPage('index.html',false);
 
-function renderHeroPF(){
-  const pf=randomPF(),box=$('#heroPF');
-  box.innerHTML=pf.map(x=>`<span class="chip ${x.cat==='mod'?'mod':''}" style="cursor:default;pointer-events:none">
+const heroCache={};
+function heroCard(mode,seeded){
+  const pf=seeded?dailyPF(mode):randomPF(mode);
+  heroCache[mode]=pf;
+  const chips=pf.map(x=>`<span class="chip ${x.cat==='mod'?'mod':''}" style="cursor:default;pointer-events:none">
     <span class="src">${CAT_NAME[x.cat]}</span>${esc(x.cat==='sit'?x.dom+'·'+x.tag:x.tag)}</span>`).join('');
-  $('#heroSent').textContent='→ '+pfSentence(pf);
+  const text=mode==='story'?pfSentence(pf):pfOutText(pf,mode);
+  return `<div class="card" style="cursor:default;padding:18px 20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <b style="font-size:13px;font-weight:800">${MODE_NAME[mode]}配方</b>
+      <span style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm rip" data-hero-copy="${mode}">复制</button>
+        <button class="btn btn-pri btn-sm rip" data-hero-wb="${mode}">去创作 ▶</button>
+      </span>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:7px;margin-bottom:10px">${chips}</div>
+    <p style="color:var(--dim);font-size:13.5px;line-height:1.8;margin:0">${esc(text)}</p>
+  </div>`;
+}
+function renderHero(){
+  $('#heroCards').innerHTML=MODES.map(m=>heroCard(m,true)).join('');
 }
 $('#reRoll').addEventListener('click',()=>{
-  const b=$('#heroPF');b.style.opacity=0;b.style.transform='translateY(8px)';
-  setTimeout(()=>{renderHeroPF();b.style.transition='all .45s cubic-bezier(.22,.61,.36,1)';b.style.opacity=1;b.style.transform='none';},200);
+  const b=$('#heroCards');b.style.opacity=0;b.style.transform='translateY(8px)';
+  setTimeout(()=>{b.innerHTML=MODES.map(m=>heroCard(m,false)).join('');b.style.transition='all .45s cubic-bezier(.22,.61,.36,1)';b.style.opacity=1;b.style.transform='none';},200);
 });
-SMCloud.ready.then(renderHeroPF);
+document.addEventListener('click',e=>{
+  const c=e.target.closest('[data-hero-copy]');
+  if(c){
+    const mode=c.dataset.heroCopy;
+    const pf=heroCache[mode]||dailyPF(mode); // 与卡片一致
+    const text=mode==='story'?pfSentence(pf):pfOutText(pf,mode);
+    copyText(text,MODE_NAME[mode]+'配方已复制');
+    return;
+  }
+  const w=e.target.closest('[data-hero-wb]'); // 每张卡直达工作台，默认模块=该卡模式
+  if(w){
+    const mode=w.dataset.heroWb;
+    const pf=heroCache[mode]||dailyPF(mode);
+    wbSendModal(pf,PF_TO_WB[mode],mode); // 锁定：只能创建该模式对应类型
+  }
+});
+function renderStats(){
+  $('#stDom').textContent=STATS.domains;
+  $('#stTag').textContent=STATS.tags;
+  $('#stL1').textContent=STATS.l1;
+  $('#stMod').textContent=STATS.mod;
+}
+SMCloud.ready.then(()=>{renderHero();renderStats();});
+SMCloud.onData(renderStats);
 </script>
 </body>
 </html>

@@ -22,11 +22,11 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 })();
 
 /* ---------- 导航 ---------- */
-const NAV=[['index.html','首页'],['matrix.html','灵感方向'],['studio.html','灵感组合'],['method.html','怎么用']];
+const NAV=[['index.html','首页'],['matrix.html','灵感方向'],['studio.html','灵感组合'],['workbench.html','工作台'],['method.html','怎么用']];
 function buildNav(active){
   const nav=document.createElement('header');nav.className='nav';
   nav.innerHTML=`<a class="brand" href="index.html"><span class="brand-mark">叙</span>
-    <span>灵感矩阵<small>STORY MATRIX</small></span></a>
+    <span>灵感工作台<small>STORY WORKBENCH</small></span></a>
     <nav class="nav-links">${NAV.map(([h,t])=>`<a href="${h}" class="${h===active?'on':''} ${h==='method.html'?'hide-m':''}">${t}</a>`).join('')}
     <a class="nav-cta rip" href="studio.html#random">🎲 随机来一条</a></nav>`;
   document.body.prepend(nav);
@@ -35,9 +35,9 @@ function buildNav(active){
 /* ---------- 页脚 ---------- */
 function buildFooter(){
   const f=document.createElement('footer');f.className='footer';
-  f.innerHTML=`<div class="fbrand">灵感矩阵<span>EMPATHY STORY LAB</span></div>
+  f.innerHTML=`<div class="fbrand">灵感工作台<span>EMPATHY STORY LAB</span></div>
     <nav>${NAV.map(([h,t])=>`<a href="${h}">${t}</a>`).join('')}</nav>
-    <div class="cp">灵感方向 · 371 个情境 · 541 组人物关系 · 337 个故事场景 · 10 个转折词</div>`;
+    <div class="cp">灵感方向 · ${STATS.tags} 个情境 · ${STATS.rel} 组人物关系 · ${STATS.scene} 个故事场景 · ${STATS.mod} 个转折词</div>`;
   document.body.append(f);
 }
 
@@ -103,39 +103,112 @@ async function copyText(s,msg){
 }
 
 /* ---------- 配方托盘 ---------- */
-function buildDock(){
+function buildDock(lockFn){ /* lockFn：返回锁定的模式名（如 getMode），托盘去创作同样只允许该模式 */
   const d=document.createElement('div');d.className='dock';d.id='dock';
   d.innerHTML=`<div class="dock-head"><b>当前配方</b><span class="cnt" id="dockCnt"></span></div>
     <div class="dock-items" id="dockItems"></div>
     <div class="dock-formula" id="dockFormula"></div>
     <div class="dock-act">
-      <button class="btn btn-pri btn-sm rip" id="dockCopy">复制配方</button>
+      <button class="btn btn-ghost btn-sm rip" id="dockCopy">复制配方</button>
+      <button class="btn btn-pri btn-sm rip" id="dockToWB">去工作台创作 ▶</button>
       <button class="btn btn-ghost btn-sm rip" id="dockClear">清空</button>
       <a class="btn btn-ghost btn-sm rip" href="studio.html">去灵感组合完善 →</a>
     </div>`;
   document.body.append(d);
   d.addEventListener('click',e=>{
-    if(e.target.closest('#dockCopy'))copyText(pfText(),'配方已复制');
-    if(e.target.closest('#dockClear')){pfClear();renderDock();toast('已清空');}
+    if(e.target.closest('#dockCopy')){const s=dockSrc();copyText(pfOutText(s.items,s.mode),MODE_NAME[s.mode]+'配方已复制');}
+    if(e.target.closest('#dockToWB')){
+      const pf=loadPF();
+      if(!pf.length)return toast('配方篮是空的：先点元素上的 ＋ 添加');
+      wbSendModal(pf,null,lockFn?lockFn():null); // 无锁时按配方内容推断，可选其他类型
+    }
+    if(e.target.closest('#dockClear')){
+      if(inWB()){curProj().src=[];commit();renderDock();}
+      else{pfClear();renderDock();}
+      toast('已清空');
+    }
     const rm=e.target.closest('[data-rm]');
-    if(rm){const [c,t]=rm.dataset.rm.split('||');pfRemove(c,t);renderDock();}
+    if(rm){const [c,t]=rm.dataset.rm.split('||');
+      if(inWB()){const p=curProj();p.src=(p.src||[]).filter(x=>!(x.cat===c&&x.tag===t));commit();renderDock();}
+      else{pfRemove(c,t);renderDock();}
+    }
   });
+}
+/* 工作台页：dock 跟随当前项目（来源配方+项目模式）；其他页：全局配方篮+灵感组合模式 */
+const WB_TO_MODE={novel:'story',music:'music',video:'video'};
+const inWB=()=>{try{return !!cur&&typeof curProj==='function'&&!!curProj();}catch(_){return false;}}; /* TDZ：页面脚本未执行完时安全回退 */
+function dockSrc(){
+  if(inWB()){const p=curProj();return{items:p.src||[],mode:WB_TO_MODE[cur.kind]||getMode()};}
+  return{items:loadPF(),mode:getMode()};
 }
 function renderDock(){
   const d=$('#dock');if(!d)return;
-  const a=loadPF();
+  const{items:a,mode}=dockSrc();
+  const wb=inWB();
+  const toWB=$('#dockToWB');if(toWB)toWB.style.display=wb?'none':'';
   d.classList.toggle('show',a.length>0);
   $('#dockCnt').textContent=a.length?a.length+' 个元素 · 点击 × 移除':'';
   $('#dockItems').innerHTML=a.map(x=>
     `<span class="dk"><span class="c">${CAT_NAME[x.cat]}</span>${x.cat==='sit'?x.dom+'·'+x.tag:x.tag}<button data-rm="${x.cat}||${x.tag}">×</button></span>`
   ).join('');
   const f=$('#dockFormula');
-  if(a.length>1){f.textContent='公式：'+pfText(a);f.classList.add('show');}
+  if(a.length>1){f.textContent=MODE_NAME[mode]+'公式：'+pfOutText(a,mode);f.classList.add('show');}
   else f.classList.remove('show');
 }
 function quickAdd(item){
   if(pfAdd(item)){renderDock();toast('已加入配方：'+(item.cat==='sit'?item.dom+'·'+item.tag:item.tag));}
   else toast('已在配方中');
+}
+
+/* ---------- 配方 → 工作台 ---------- */
+/* WB_KINDS 定义在 data.js */
+function wbSendModal(pf,defKind,lock){
+  const infer=lock||pfInferMode(pf);
+  if(!WB_KINDS[defKind])defKind=PF_TO_WB[infer];
+  const WARN={ // 跨类型创建时的提示文案
+    'music>novel':'这是音乐配方（含视角/金句）。小说项目会把全部元素写进大纲，但故事文案按故事公式输出。',
+    'music>video':'这是音乐配方（含视角/金句）。短视频文案不会体现视角/金句，但它们会完整保留在来源配方里。',
+    'video>novel':'这是短视频配方（含钩子）。小说项目会把全部元素写进大纲，钩子会作为情节节奏参考保留。',
+    'video>music':'这是短视频配方（含钩子）。音乐文案不会体现钩子，但它会完整保留在来源配方里。',
+    'story>music':'这是故事配方（无视角/金句）。创建音乐项目后，视角与金句方向需要你自己补。',
+    'story>video':'这是故事配方（无钩子）。创建短视频项目后，钩子类型需要你自己补。'
+  };
+  const kinds=lock?[defKind]:Object.keys(WB_KINDS); /* lock：锁定发起时所属模式，只能创建对应类型 */
+  SMCloud.openModal({
+    title:'送到工作台创作',
+    okText:'创建项目并去创作',
+    body:`<p class="sm-tip">${lock?`已按当前 <b>${MODE_NAME[infer]}模式</b>锁定，只能创建${WB_KINDS[defKind]}项目`:`配方识别为 <b>${MODE_NAME[infer]}配方</b>，默认创建对应项目（小说→大纲，音乐→主题，短视频→主题与故事），创建后直接进编辑器。`}</p>
+    <div style="display:flex;gap:10px;margin:12px 0 10px">
+      ${kinds.map(k=>`<label data-wbk="${k}" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:12px;border:1px solid var(--line);cursor:${lock?'default':'pointer'};font-size:14px;color:var(--dim);${k===defKind?'background:rgba(167,139,250,.15);border-color:var(--vio);color:var(--txt);font-weight:700':''}">
+        <input type="radio" name="wbk" value="${k}" ${k===defKind?'checked':''} style="accent-color:#a78bfa"> ${WB_KINDS[k]}</label>`).join('')}
+    </div>
+    <div id="wbWarn" style="display:none;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);border-radius:10px;padding:9px 12px;font-size:12.5px;color:#fcd34d;margin-bottom:10px"></div>
+    <label class="sm-field"><span>项目名（可稍后改）</span><input id="wbPName" value="${esc(autoName(pf,defKind))}" maxlength="24" autocomplete="off"></label>`,
+    onReady:m=>{
+      const warn=m.querySelector('#wbWarn');
+      const sync=()=>{
+        const k=m.querySelector('input[name=wbk]:checked').value;
+        const w=WARN[infer+'>'+k];
+        if(w){warn.textContent='⚠ '+w;warn.style.display='block';}
+        else{warn.style.display='none';}
+        m.querySelector('#wbPName').value=autoName(pf,k);
+        m.querySelectorAll('[data-wbk]').forEach(l=>{
+          const on=l.dataset.wbk===k;
+          l.style.background=on?'rgba(167,139,250,.15)':'';
+          l.style.borderColor=on?'var(--vio)':'';
+          l.style.color=on?'var(--txt)':'';
+          l.style.fontWeight=on?'700':'';
+        });
+      };
+      m.addEventListener('change',e=>{if(e.target.name==='wbk')sync();});
+      sync();
+    },
+    onOk:m=>{
+      const k=m.querySelector('input[name=wbk]:checked').value;
+      const name=m.querySelector('#wbPName').value;
+      const r=sendPFToWB(pf,k,name);
+      location.href='workbench.html?kind='+r.kind+'&proj='+r.proj;
+    }});
 }
 
 /* ---------- 磁力按钮 ---------- */
@@ -153,7 +226,7 @@ function magnetic(){
 /* ---------- 页面初始化 ---------- */
 function initPage(active,withDock=true){
   buildBg();buildNav(active);buildFooter();
-  if(withDock){buildDock();renderDock();}
+  if(withDock){buildDock(active==='studio.html'?getMode:null);renderDock();}
   magnetic();stagger();
   if(location.hash==='#random'&&active==='studio.html'){setTimeout(()=>{doRandom?doRandom():0;history.replaceState(null,'','studio.html');},300);}
 }

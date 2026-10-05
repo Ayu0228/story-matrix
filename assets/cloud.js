@@ -7,10 +7,14 @@ const LS_CFG='sm_cloud_cfg',LS_TOK='sm_cloud_tok',SS_TOK='sm_cloud_tok',FILE='st
 let cfg=null,data=null,sha=null,state='off',busyMsg='',saveTimer=null,saving=false,dirty=false;
 const stateFns=[],dataFns=[];
 const apiBase=()=>window.SM_API_BASE||'https://api.github.com';
-function blank(){return {v:3,tax:null,rels:[],scenes:[],saved:[],pf:[]};}
+function blank(){return {v:5,tax:null,rels:[],scenes:[],saved:[],pf:[],wb:null};}
 function norm(){
   data=Object.assign(blank(),data||{});
   ['rels','scenes','saved','pf'].forEach(k=>{if(!Array.isArray(data[k]))data[k]=[];});
+  // v3 → v4：工作台数据（小说/音乐/短视频项目）
+  if(!data.wb||typeof data.wb!=='object'){data.wb={novels:[],musics:[],videos:[]};}
+  ['novels','musics','videos'].forEach(k=>{if(!Array.isArray(data.wb[k]))data.wb[k]=[];});
+  data.v=5;
   // v1 → v2 / 首次使用：以内置数据为底本，全量迁入私有仓库（含历史自定义条目）
   if(!Array.isArray(data.tax)||!data.tax.length){
     if(typeof BUILTIN!=='undefined'){
@@ -26,6 +30,32 @@ function norm(){
   if(!Array.isArray(data.mods)){
     data.mods=(typeof BUILTIN!=='undefined')?JSON.parse(JSON.stringify(BUILTIN.mods)):[];
     data.v=3;
+  }
+  // v4 → v5：行业扩充包合入（新增方向整体补入；已有方向把缺失的分类/标签/关系/场景补回。
+  //          用户自己新增、改名的内容不受影响；用户删除过的内置条目会随本次扩充重新出现。）
+  if(typeof BUILTIN!=='undefined'){
+    const has=(l1,tag)=>data.rels.some(x=>x.l1===l1&&x.tag===tag);
+    const hasS=(l1,tag)=>data.scenes.some(x=>x.l1===l1&&x.tag===tag);
+    if(Array.isArray(data.tax)){
+      BUILTIN.doms.forEach(d=>{
+        const t=data.tax.find(x=>x.id===d.id);
+        if(!t){data.tax.push(JSON.parse(JSON.stringify(d)));return;}
+        d.tree.forEach(n=>{
+          const m=t.tree.find(x=>x.l1===n.l1);
+          if(!m){t.tree.push(JSON.parse(JSON.stringify(n)));return;}
+          const cur=new Set([...(m.tags||[]),...(m.groups||[]).flatMap(g=>g.tags)]);
+          if(n.tags)n.tags.forEach(tag=>{if(!cur.has(tag)){m.tags=m.tags||[];m.tags.push(tag);}});
+          if(n.groups)n.groups.forEach(g=>{
+            const mg=(m.groups||[]).find(x=>x.name===g.name);
+            if(!mg){m.groups=m.groups||[];m.groups.push(JSON.parse(JSON.stringify(g)));return;}
+            g.tags.forEach(tag=>{if(!mg.tags.includes(tag))mg.tags.push(tag);});
+          });
+        });
+      });
+      Object.entries(BUILTIN.rels).forEach(([l1,arr])=>arr.forEach(tag=>{if(!has(l1,tag))data.rels.push({tag,l1});}));
+      Object.entries(BUILTIN.scenes).forEach(([l1,arr])=>arr.forEach(tag=>{if(!hasS(l1,tag))data.scenes.push({tag,l1});}));
+    }
+    data.v=5;
   }
 }
 function loadCfg(){
@@ -126,12 +156,12 @@ const api={
   _dom(id){const d=data.tax.find(d=>d.id===id);if(!d)throw new Error('方向不存在（可能已被删除）');return d;},
   _cat(domId,l1){const d=this._dom(domId);const n=d.tree.find(n=>n.l1===l1);if(!n)throw new Error('分类不存在（可能已被删除）');return {d,n};},
   _catTaken(l1,exceptDom){return data.tax.some(d=>d.id!==exceptDom&&d.tree.some(n=>n.l1===l1));},
-  addDom(name){
+  addDom(name,modes){
     norm();name=(name||'').trim();
     if(!name)throw new Error('请填写方向名称');
     if(data.tax.some(d=>d.name===name))throw new Error('已有同名方向');
     const id='u'+Date.now().toString(36);
-    data.tax.push({id,name,tree:[]});touch();emit();return id;
+    data.tax.push({id,name,modes:(Array.isArray(modes)&&modes.length?modes:['story','music','video']),tree:[]});touch();emit();return id;
   },
   renameDom(id,name){
     norm();name=(name||'').trim();
@@ -222,13 +252,19 @@ const api={
     data.mods.splice(i,1);touch();emit();return true;
   },
   saveSaved(sv){norm();data.saved=sv;touch();},
+  saveWB(wb){
+    norm();
+    if(!wb||typeof wb!=='object')throw new Error('数据格式不正确');
+    ['novels','musics','videos'].forEach(k=>{if(!Array.isArray(wb[k]))throw new Error('数据格式不正确：'+k);});
+    data.wb=wb;touch();emit();return true;
+  },
   savePF(pf){norm();data.pf=pf;touch();},
   isOn(){return !!cfg&&state==='ok';}
 };
 window.SMCloud=api;
 
 /* ---------- 通用弹窗 ---------- */
-function openModal({title,body,okText='确定',onOk,cancelText='取消',hideFooter=false}){
+function openModal({title,body,okText='确定',onOk,onReady,cancelText='取消',hideFooter=false}){
   closeModal();
   const mask=document.createElement('div');mask.className='sm-mask';mask.id='smMask';
   mask.innerHTML=`<div class="sm-panel" role="dialog">
@@ -238,6 +274,7 @@ function openModal({title,body,okText='确定',onOk,cancelText='取消',hideFoot
   </div>`;
   document.body.append(mask);
   requestAnimationFrame(()=>{mask.classList.add('open');mask.querySelector('.sm-panel').classList.add('open');});
+  if(onReady)onReady(mask);
   const close=()=>closeModal();
   mask.addEventListener('click',e=>{
     if(e.target===mask)close();

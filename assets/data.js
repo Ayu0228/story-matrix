@@ -1,6 +1,6 @@
 const MODIFIERS=['背叛','和解','牺牲','亏欠','送别','重逢','错过','成全','救赎','报复'];
 let DOMAINS=[
-{id:'aiqing',name:'爱情',tree:[
+{id:'aiqing',name:'爱情',modes:['story','music','video'],tree:[
  {l1:'单相思',tags:['暗恋','遥望着的人','擦肩过一次']},
  {l1:'邂逅',tags:['一见钟情','不打不相识','重逢没认出来']},
  {l1:'相守',tags:['异地奔赴','同居磨合','融入彼此生活']},
@@ -16,7 +16,7 @@ let DOMAINS=[
    {name:'悔恨',tags:['迟到的真相','错过时机']},
    {name:'释怀',tags:['祝福','再见是朋友']},
    {name:'复燃',tags:['破镜重圆','旧情复燃']}]}],},
-{id:'qinqing',name:'亲情',tree:[
+{id:'qinqing',name:'亲情',modes:['story','music','video'],tree:[
  {l1:'养育',groups:[
    {name:'父母养育',tags:['省吃俭用','熬夜陪护','牺牲自己的机会']},
    {name:'隔代养育',tags:['爷爷奶奶带大','隔代宠','村口等待']}]},
@@ -31,7 +31,7 @@ let DOMAINS=[
    {name:'照护之累',tags:['病床陪护','阿尔茨海默','养老分歧']}]},
  {l1:'永别',tags:['来不及的告白','整理遗物','忌日的一碗面']},
  {l1:'落空',tags:['孩子不成器','孩子不回家','视频里的敷衍']}],},
-{id:'youqing',name:'友情',tree:[
+{id:'youqing',name:'友情',modes:['story','music','video'],tree:[
  {l1:'相识',tags:['一见如故','不打不相识','患难初识']},
  {l1:'相知',tags:['同窗共读','合租打拼','并肩作战','深夜长谈']},
  {l1:'变故',groups:[
@@ -47,13 +47,13 @@ let DOMAINS=[
    {name:'重逢',tags:['同学会','街头偶遇','孩子同班']},
    {name:'偿还',tags:['恩义相酬','迟到的道歉','替他完成遗愿']},
    {name:'释怀或意难平',tags:['相视一笑','再也回不到从前']}]}],},
-{id:'shisheng',name:'师生',tree:[
+{id:'shisheng',name:'师生',modes:['story'],tree:[
  {l1:'入门',tags:['初入门被严训','笨拙出丑','第一次被夸奖']},
  {l1:'叛逆',tags:['质疑老师','理念不合','顶撞被逐']},
  {l1:'出师',tags:['出师考核','门派刁难','自立门户']},
  {l1:'较量',tags:['青出于蓝','赛场胜过老师','报恩提携']},
  {l1:'传承',tags:['临终授业','接手衣钵','收徒仪式']}],},
-{id:'ziwo',name:'成长',tree:[
+{id:'ziwo',name:'成长',modes:['story','music','video'],tree:[
  {l1:'志向',tags:['少年志向','离职追梦','立下军令状']},
  {l1:'迷茫',tags:['方向不明','随波逐流','深夜自问']}, {l1:'意义危机',tags:['重复的日子','不知道为谁忙','突然的荒诞感','微小确幸']},
 
@@ -62,7 +62,7 @@ let DOMAINS=[
  {l1:'挫折',tags:['中年裁员','体检报告','梦想搁浅']},
  {l1:'放下',tags:['承认普通','放下执念','原谅当年的自己']},
  {l1:'重生',tags:['从头再来','迟到的开始','新的身份']}],},
-{id:'deshi',name:'欲望',tree:[
+{id:'deshi',name:'欲望',modes:['story','music','video'],tree:[
  {l1:'渴求',tags:['梦寐以求','踮脚够不着','别人都有']},
  {l1:'如愿',tags:['得偿所愿','天降机会','被选中']},
  {l1:'守成',tags:['怕失去','患得患失','处处提防']},
@@ -71,44 +71,44 @@ let DOMAINS=[
  {l1:'贪欲',tags:['越要越多','为此失去更重要的','回不了头']},
  {l1:'舍得',tags:['主动放手','得之我幸','转身离开']},
  {l1:'他人之失',tags:['对手跌下神坛','看笑话','忍住没笑']}],},
-{id:'gongping',name:'公平',tree:[
+{id:'gongping',name:'公平',modes:['story'],tree:[
  {l1:'委屈',tags:['被抢功劳','被诬陷','弱者被欺压']},
  {l1:'隐忍',tags:['不敢声张','生计所迫','忍气吞声']},
  {l1:'绝路',tags:['投诉被踢皮球','没人信','证据被毁']},
  {l1:'抗争',tags:['收集证据','孤身申诉','公开发声']},
  {l1:'昭雪',tags:['真相大白','迟到的道歉','恶人伏法']},
  {l1:'宽恕',tags:['原谅','不原谅','算了']}],},
-{id:'zhongcheng',name:'信任',tree:[
+{id:'zhongcheng',name:'信任',modes:['story'],tree:[
  {l1:'托付',tags:['托孤','交底牌','把后背交出去']},
  {l1:'试探',tags:['考验','设局','半信半疑']},
  {l1:'出卖',tags:['被出卖','证据确凿','最信任的人捅刀']},
  {l1:'赎罪',tags:['弥补','自首','用余生偿还']},
  {l1:'重建',tags:['重新交心','第二次机会','破镜重圆']}],},
-{id:'enqing',name:'恩情',tree:[
+{id:'enqing',name:'恩情',modes:['story'],tree:[
  {l1:'受恩',tags:['一饭之恩','雪中送炭','陌生人的善意']},
  {l1:'铭记',tags:['铭记于心','立志回报','信物珍藏']},
  {l1:'相报',tags:['涌泉相报','滴水之恩','成全对方']},
  {l1:'难报',tags:['恩情太重','对方已不在','无以为报']},
  {l1:'忘恩负义',tags:['反咬一口','以怨报德','寒心']}],},
-{id:'shengsi',name:'生死',tree:[
+{id:'shengsi',name:'生死',modes:['story','music'],tree:[
  {l1:'死期',tags:['确诊通知书','倒计时','未完成的清单']},
  {l1:'临终',tags:['最后的话','放不下的人','交代后事']},
  {l1:'告别',tags:['没说出口','赶不到的航班','最后一面']},
  {l1:'身后',tags:['整理遗物','忌日','用他教的方式活着']},
  {l1:'遗志',tags:['遗愿有人接续','手艺传下去','替他看世界']}],},
-{id:'shijian',name:'岁月',tree:[
+{id:'shijian',name:'岁月',modes:['story','music'],tree:[
  {l1:'失之交臂',tags:['差一步','错身的时机','来晚一步']},
  {l1:'迟到',tags:['迟到的信','多年后才知道','真相来得太晚']},
  {l1:'物是人非',tags:['故地重游','老店关门','旧歌响起']},
  {l1:'回不去',tags:['拆掉的旧居','变味的关系','童年不再']},
  {l1:'新生',tags:['新的起点','旧瓶装新酒','下一代的故事']}],},
-{id:'guxiang',name:'家乡',tree:[
+{id:'guxiang',name:'家乡',modes:['story','music'],tree:[
  {l1:'离乡',tags:['车站送别','行囊','回望']},
  {l1:'乡愁',tags:['方言','妈妈的味道','老屋的炊烟']},
  {l1:'返乡',tags:['近乡情怯','老屋塌了','发小认不出']},
  {l1:'漂泊',tags:['融不进的城市','回不去的家乡','两头都不属于']},
  {l1:'归根',tags:['落叶归根','回乡创业','把孩子接回老家']}],},
-{id:'jinqian',name:'金钱',tree:[
+{id:'jinqian',name:'金钱',modes:['story'],tree:[
  {l1:'窘迫',tags:['缴费单前','开口借钱','装出来的体面']}, {l1:'被看轻的日子',tags:['看人下菜碟','被当面奚落','聚会上的座次','翻身后的态度转变']},
 
  {l1:'转机',tags:['一笔横财的消息','贵人出现','孤注一掷']},
@@ -116,33 +116,33 @@ let DOMAINS=[
  {l1:'人心',tags:['借钱见人心','锦上添花易','分钱散伙']},
  {l1:'落魄',tags:['破产','从简','旧友冷眼']},
  {l1:'知足',tags:['粗茶淡饭','够用就好','家人才是财富']}],},
-{id:'gudu',name:'孤独',tree:[
+{id:'gudu',name:'孤独',modes:['story','music'],tree:[
  {l1:'寂寞',tags:['一个人的节日','空荡的房间','无人分享的好消息']},
  {l1:'误解',tags:['话到嘴边','鸡同鸭讲','微笑面具']},
  {l1:'独处',tags:['独处之乐','一个人的仪式感','与自己和解']},
  {l1:'暖意',tags:['深夜一碗面','陌生人的善意','宠物的迎接']},
  {l1:'守护',tags:['老狗的最后时光','陪床的灯','最后一段路']}],},
-{id:'shenfen',name:'脸面',tree:[
+{id:'shenfen',name:'脸面',modes:['story'],tree:[
  {l1:'困惑',tags:['我是谁','从何而来','镜中的陌生人']},
  {l1:'伪装',tags:['隐姓埋名','双重身份','怕被认出']},
  {l1:'暴露',tags:['身世揭晓','马甲掉落','故人一句话']},
  {l1:'白眼',tags:['格格不入','出身被歧视','另类']}, {l1:'尊严与屈辱',tags:['当众被羞辱','低声下气求人','守住最后的体面','替家人扛下难堪','痛点被当众戳破']},
 
  {l1:'接纳',tags:['承认真实的自己','与过去和解','不再需要认可']}],},
-{id:'jinzheng',name:'输赢',tree:[
+{id:'jinzheng',name:'输赢',modes:['story'],tree:[
  {l1:'备战',tags:['十年磨一剑','封闭训练','立军令状']},
  {l1:'对决',tags:['巅峰之战','狭路相逢','最后一球']},
  {l1:'惜败',tags:['只差一分','遗憾离场','误判']},
  {l1:'虽败犹荣',tags:['拼尽全力','赢得尊重','没有遗憾']},
  {l1:'宿敌',tags:['惺惺相惜','一辈子的对手','英雄惜英雄']},
  {l1:'释然',tags:['输赢之外','放下胜负','传给后辈']}],},
-{id:'jiaguo',name:'家国',tree:[
+{id:'jiaguo',name:'家国',modes:['story'],tree:[
  {l1:'离散',tags:['战乱分离','两岸相隔','迁徙路上']},
  {l1:'坚守',tags:['大时代小人物','守一盏灯','岗位上的坚持']},
  {l1:'奉献',tags:['舍小家','前线与后方','隐姓埋名的贡献']},
  {l1:'团圆',tags:['失散重逢','一个都不能少','年夜饭']},
  {l1:'薪火',tags:['父辈的旗帜','讲过去的事','传家宝']}],},
-{id:'ziran',name:'自然',tree:[
+{id:'ziran',name:'自然',modes:['story','music','video'],tree:[
  {l1:'遇见',tags:['雨后的山野','陌生猫的出现','老屋后的树']},
  {l1:'相伴',tags:['农场日常','节气耕作','人与动物的信任']},
  {l1:'灾难',tags:['台风过境','洪水','大火之后']},
@@ -368,6 +368,147 @@ let SCENES={
 '见证宏大':['星空旷野','产房外第一声啼哭','洪水屋顶','十年一剑的亮相台'],
 '守候':['等花开的窗台','候鸟归来的湿地','守到大的树']
 };
+
+/* ---------- 行业扩充包 v5：短剧/网文/音乐平台高频题材方向 ----------
+   依据：短剧爆款题材（战神/逆袭/赘婿/神医/甜宠/虐恋/复仇/重生/穿越/真假千金/马甲/年代/职场/悬疑），
+   网文平台热门分类（现实/悬疑/脑洞/年代），使灵感方向覆盖「共情故事 + 类型叙事」双轨。 */
+const DOMS_ADD=[
+{id:'nixi',name:'逆袭',modes:['story','video'],tree:[
+ {l1:'落难',tags:['被退婚','被逐出家门','装穷藏拙']},
+ {l1:'起势',tags:['天降机缘','贵人点将','祖传绝活现世']},
+ {l1:'亮牌',tags:['身份揭晓','实力展露','大佬亲临']},
+ {l1:'打脸',tags:['势利眼变脸','当众被打脸','曾经看不起的人跪服']},
+ {l1:'登顶',tags:['行业封神','小人物登顶','衣锦还乡']}],},
+{id:'fuchou',name:'复仇',modes:['story','video'],tree:[
+ {l1:'血海深仇',tags:['家破人亡','含冤入狱','被夺家产']},
+ {l1:'暗伏',tags:['改名换姓','卧薪尝胆','潜伏到仇人身边']},
+ {l1:'布局',tags:['收集证据','借力打力','离间仇人同盟']},
+ {l1:'反杀',tags:['当众揭穿','以其人之道还治','证据链闭合']},
+ {l1:'清算之后',tags:['大仇得报','恩怨两清','复仇者的空虚']}],},
+{id:'tianchong',name:'甜宠',modes:['story','video'],tree:[
+ {l1:'相遇',tags:['契约婚姻','先婚后爱','欢喜冤家']},
+ {l1:'心动',tags:['双向暗恋','暗戳戳吃醋','救命之恩']},
+ {l1:'掉马',tags:['马甲掉落','身份揭晓','真香现场']},
+ {l1:'危机',tags:['家族反对','误会冷战','白月光搅局']},
+ {l1:'圆满',tags:['公开官宣','求婚现场','世纪婚礼']}],},
+{id:'majia',name:'身份反差',modes:['story','video'],tree:[
+ {l1:'隐世',tags:['隐姓埋名','低调入赘','装普通员工']},
+ {l1:'被踩',tags:['被当众羞辱','被退婚','被按头道歉']},
+ {l1:'揭晓',tags:['大佬到场','一纸调令','真实身份曝光']},
+ {l1:'变脸',tags:['全场态度反转','追悔莫及','跪服']},
+ {l1:'余波',tags:['隐退或回归','旧爱重选','新身份的困惑']}],},
+{id:'chongsheng',name:'重生改写',modes:['story','video'],tree:[
+ {l1:'重回',tags:['重生归来','回到分岔口','再来一次']},
+ {l1:'先知',tags:['知晓未来','避开大坑','抢占先机']},
+ {l1:'改写',tags:['报复前世仇人','弥补遗憾','守护家人']},
+ {l1:'变数',tags:['剧情偏离','新的敌人','旧爱重选']},
+ {l1:'今生',tags:['珍惜眼前人','新的梦想','不再错过']}],},
+{id:'xuanyi',name:'悬疑',modes:['story','video'],tree:[
+ {l1:'诡异开局',tags:['离奇死亡','密室失踪','怪谈规则']},
+ {l1:'追索',tags:['蛛丝马迹','各怀鬼胎的嫌疑人','第二现场']},
+ {l1:'反转',tags:['真凶出人意料','死者另有秘密','全员说谎']},
+ {l1:'真相',tags:['动机揭晓','迟到的正义','付出代价']},
+ {l1:'余悸',tags:['细思极恐','新的怪谈','未解的伏笔']}],},
+{id:'zhichang',name:'职场',modes:['story','video'],tree:[
+ {l1:'入局',tags:['新人被欺负','替人背锅','功劳被抢']},
+ {l1:'磨炼',tags:['深夜改方案','被客户刁难','连续被拒']},
+ {l1:'破局',tags:['贵人提携','一战成名','副业开花']},
+ {l1:'博弈',tags:['办公室站队','竞聘对决','甩锅与接锅']},
+ {l1:'去留',tags:['晋升答辩','辞职创业','整顿职场']}],},
+{id:'niandai',name:'年代',modes:['story','video'],tree:[
+ {l1:'艰苦',tags:['缺衣少食','下乡插队','赶工熬夜']},
+ {l1:'机遇',tags:['南下闯荡','第一批个体户','恢复高考']},
+ {l1:'浮沉',tags:['被骗巨款','东山再起','厂子兴衰']},
+ {l1:'守艺',tags:['老手艺传承','守住老厂','家族手艺']},
+ {l1:'回响',tags:['一张老照片','故地重游','讲给下一代']}],}
+];
+const RELS_ADD={
+'落难':['被退婚的赘婿与未婚妻一家','被逐出家门的少爷与家族','装穷的丈夫与妻子','被逐的赘婿'],
+'暗伏':['卧薪尝胆的复仇者','改名换姓的潜伏者','仇人身边的秘书','隐忍的遗孤'],
+'起势':['落魄青年与伯乐','草根与星探','手艺人与识货人','押上全部的创业者'],
+'破局':['下属与伯乐','一战成名的员工','副业开花的上班族','被点将的新人'],
+'亮牌':['隐藏大佬与势利眼','真龙与虾兵蟹将','少主与旧部','隐世高人与冒犯者'],
+'打脸':['翻身者与旧对手','发达者与嘲笑过他的人','新贵与老同学','夺冠者与质疑者'],
+'登顶':['登顶者与陪跑人','传奇与纪录','衣锦还乡者与发小','封神者与见证者'],
+'血海深仇':['幸存者与仇人','蒙冤入狱者与构陷者','破产者与夺产者','灭门遗孤与元凶'],
+'布局':['复仇者与共谋者','调查记者与黑幕方','借刀者与刀','卧底与头目'],
+'反杀':['复仇者与众仇人','原告与被告','揭穿者与被揭穿者','设局者与入局者'],
+'清算之后':['大仇得报者与空荡的家','放下仇恨的人','恩怨两清的双方','幸存遗孤与监护人'],
+'相遇':['协议夫妻双方','被迫同居的两人','死对头搭档','联姻的陌生人'],
+'心动':['互相暗恋的同事','青梅竹马','救命恩人与被救者','网友奔现的两人'],
+'掉马':['隐婚夫妻','大佬与迷糊助理','双强情侣','装穷者与枕边人'],
+'危机':['恋人与其家族','冷战中的情侣','前任与现任','门第悬殊的两人'],
+'圆满':['新婚夫妻','求婚者与被告白者','婚礼上的新人','官宣的两人'],
+'隐世':['隐世高人与势利亲戚','入赘的女婿与岳家','装新人员工与主管','避世的名门之后'],
+'被踩':['被羞辱者与羞辱者','被退婚者与未婚妻','被按头道歉者与施压者','穿工服进店的人'],
+'揭晓':['真大佬与假大佬','到场的大佬与全场','少东家与店长','调令前后的同一员工'],
+'变脸':['前倨后恭的众人','追悔莫及的旧识','跪服的对手','簇拥的宾客'],
+'余波':['旧爱与新欢','归隐者与江湖','重选的爱人','身份曝光后的夫妻'],
+'重回':['重回者与前世仇人','重回者与旧爱','两个重生者','先知与不知情者'],
+'先知':['知晓未来者与赌徒','避开大坑的人','抢占先机的创业者','重考的考生'],
+'改写':['复仇者与前世加害者','弥补者与被亏欠者','守护者与家人','改写命运的一家'],
+'变数':['重生者与变量','新敌与旧敌','偏离剧情的炮灰','觉醒的原著角色'],
+'今生':['今生伴侣','错过又重逢的人','新的伙伴','重生后的自己'],
+'诡异开局':['死者与侦探','失踪者与寻找者','入局者与规则制定者','报案的邻居'],
+'追索':['警探与嫌疑人','调查者与知情人','搭档与背叛的搭档','记者与线人'],
+'反转':['真凶与侦探','死者与秘密情人','说谎的众人','扮猪吃虎的嫌疑人'],
+'真相':['真相大白者与蒙冤者','复仇者与被复仇者','付出代价的人','迟到的正义一方'],
+'余悸':['幸存者与阴影','记录者与怪谈','新入局者','未解伏笔的读者'],
+'入局':['新人与老油条','背锅者与甩锅者','下属与抢功上司','实习生与 mentor'],
+'磨炼':['乙方与客户','熬夜赶方案的团队','连续被拒的创业者','被刁难的客服'],
+'博弈':['竞聘对手','站队的两方','办公室政治高手与老实人','甩锅的会议'],
+'去留':['离职者与挽留的上司','创业者与投资人','整顿职场的新人','退休的老员工'],
+'艰苦':['插队知青与老乡','困窘的一家人','赶工的师徒','囤粮的邻居'],
+'机遇':['南下的小夫妻','摆摊的个体户','恢复高考的考生','倒货的老乡'],
+'浮沉':['破产的厂主','东山再起者','老厂工人','被骗巨款的人'],
+'守艺':['老匠人与徒弟','守厂人','手艺世家',' museum 外的守艺人'.replace(' museum ','博物馆')],
+'回响':['老一辈与孙辈','重游的老友','讲古的人','翻相册的一家人']
+};
+const SCENES_ADD={
+'落难':['退婚的酒席','家族祠堂','简陋的出租屋','工地宿舍'],
+'暗伏':['仇人的公司','深夜的档案室','酒会的角落','潜伏的工位'],
+'起势':['深夜的面试间','旧物市场','伯乐的茶室','压上全部的柜台'],
+'破局':['项目庆功宴','述职现场','副业小店','凌晨的工位'],
+'亮牌':['宴会的大厅','招标现场','同学会','签约仪式'],
+'打脸':['发布会','聚会的主桌','签字的会议室','庆功宴'],
+'登顶':['领奖台','村口的老槐树','总部的顶层','纪录墙前'],
+'血海深仇':['烧毁的老宅','监狱探视窗','破产的厂房','灵堂'],
+'布局':['深夜的档案室','秘密会面的车库','打印店','跟踪的雨夜'],
+'反杀':['股东大会','发布会的讲台','家宴的当场','法庭'],
+'清算之后':['墓前','空荡的大厅','远行的车站','大仇得报后的深夜'],
+'相遇':['民政局门口','合租的公寓','公司电梯','相亲的餐桌'],
+'心动':['加班的深夜','咖啡馆的角落','雨天的屋檐','跨年的天台'],
+'掉马':['宴会现场','直播间','公司年会','领奖台'],
+'危机':['老宅的家宴','空荡荡的客厅','同学会','机场安检口'],
+'圆满':['烟花下的广场','铺满玫瑰的房间','婚礼殿堂','官宣的直播间'],
+'隐世':['小县城的摊位','普通工位','岳父家的客厅','深夜的大排档'],
+'被踩':['宴席的主桌','退婚现场','会议室','奢侈品店'],
+'揭晓':['宴会厅','总部大楼','直播现场','全员大会'],
+'变脸':['愣住的众人前','追悔的门口','簇拥的大厅','重新摆上的主位'],
+'余波':['远行的机场','深夜的天台','故乡的老街','隐退的小院'],
+'重回':['熟悉又陌生的房间','多年前的教室','分岔的路口','前世的出事现场'],
+'先知':['彩票站','即将拆迁的老街','面试现场',' betting 的柜台'.replace(' betting ','下注的')],
+'改写':['前世出事的路口','家中的饭桌','签约现场','守护的病床前'],
+'变数':['提前到来的危机','陌生的访客','改变的宴会','原著剧情的裂缝'],
+'今生':['重生后的第一个日出','握住的眼前人','新开张的店','不再有遗憾的婚礼'],
+'诡异开局':['封锁的密室','雨夜的现场','贴满规则的墙','监控死角'],
+'追索':['档案室','审讯室','嫌疑人的客厅','第二现场'],
+'反转':['揭晓的地下室','当年的仓库','隐藏的房间','全员对峙的客厅'],
+'真相':['真相发布会','墓园','重见天日的现场','结案陈词的法庭'],
+'余悸':['深夜的电梯','崭新的规则纸条','回声的空屋','记录怪谈的电脑'],
+'入局':['工位与打印机','会议室','深夜的办公室','茶水间'],
+'磨炼':['客户公司前台','凌晨的便利店','被拒的方案前','24小时便利店'],
+'博弈':['竞聘会场','茶水间','高层会议室','投票现场'],
+'去留':['离职面谈间','创业路演现场','工位最后一日','晋升答辩室'],
+'艰苦':['土坯房的灯','田埂','工地的窝棚','粮站门口'],
+'机遇':['火车站','夜市小摊','考场外','南下的绿皮车'],
+'浮沉':['倒闭的厂门','账本的灯下','新开张的铺','要债的门口'],
+'守艺':['老作坊','博物馆的玻璃柜','传习所','庙会摊位'],
+'回响':['翻开的相册','老厂旧址','炕头','修好的老屋']
+};
+DOMAINS.push(...DOMS_ADD);
+Object.assign(RELS,RELS_ADD);
+Object.assign(SCENES,SCENES_ADD);
 
 /* ---------- 共享工具：数据展平 / 配方存储 ---------- */
 /* 展平某方向下的情境标签：{tag,dom,l1} */
@@ -771,6 +912,108 @@ const loadPF=()=>{if(cloudOn())return SMCloud.data.pf;try{return JSON.parse(loca
 const savePF=a=>{if(cloudOn())SMCloud.savePF(a);else localStorage.setItem(PF_KEY,JSON.stringify(a));};
 const loadSV=()=>{if(cloudOn())return SMCloud.data.saved;try{return JSON.parse(localStorage.getItem(SV_KEY))||[]}catch(e){return[]}};
 const saveSV=a=>{if(cloudOn())SMCloud.saveSaved(a);else localStorage.setItem(SV_KEY,JSON.stringify(a));};
+/* 工作台：云 v4 data.wb；未连接降级本浏览器 */
+const WB_KEY='sm_wb';
+const blankWB=()=>({novels:[],musics:[],videos:[]});
+const loadWB=()=>{if(cloudOn())return SMCloud.data.wb||blankWB();try{return Object.assign(blankWB(),JSON.parse(localStorage.getItem(WB_KEY))||{})}catch(e){return blankWB()}};
+const saveWB=o=>{if(cloudOn())SMCloud.saveWB(o);else localStorage.setItem(WB_KEY,JSON.stringify(o));};
+/* 项目工厂（各页共用） */
+const wbNewId=()=>'w'+Date.now().toString(36)+Math.floor(Math.random()*999);
+const wbNew=kind=>{
+  if(kind==='novel')return{id:wbNewId(),name:'未命名小说',outline:'',rules:'',world:'',chars:[],chapters:[{t:'第一章',c:''}],cur:0,src:null};
+  if(kind==='music')return{id:wbNewId(),name:'未命名歌曲',theme:'',story:'',structure:WB.music.structs[0].tpl,inst:[],style:[],mood:[],melody:'',src:null};
+  return{id:wbNewId(),name:'未命名视频',theme:'',story:'',shots:[{jing:'中景',scene:'',line:'',dur:3}],src:null};
+};
+/* 把当前配方送进工作台：建项目 → 存 → 返回跳转链接 */
+function sendPFToWB(pf,kind,name){
+  if(!pf||!pf.length)throw new Error('配方篮是空的');
+  const wb=loadWB();
+  const p=wbNew(kind);
+  p.src=pf.slice();
+  p.name=(name||'').trim()||autoName(pf,kind);
+  if(kind==='novel')p.outline='【灵感配方】'+(pfText(pf));
+  else if(kind==='music')p.theme=pfOutText(pf,'music');
+  else{p.theme=pfOutText(pf,'video');p.story='';}
+  wb[kind+'s'].unshift(p);
+  saveWB(wb);
+  return{kind,proj:p.id};
+}
+function autoName(pf,kind){
+  const sit=pf.find(x=>x.cat==='sit'),rel=pf.find(x=>x.cat==='rel');
+  const base=sit?sit.dom+'·'+sit.tag:(rel?rel.tag:MODE_NAME[kind==='novel'?'story':kind]);
+  return base.slice(0,18);
+}
+
+/* 配方所属模式：由内容推断（视角/金句→音乐，钩子→短视频，其余→故事） */
+function pfInferMode(pf){
+  const v=(pf||[]).filter(x=>x.cat==='view'||x.cat==='line').length;
+  const h=(pf||[]).filter(x=>x.cat==='hook').length;
+  if(h>v)return'video';
+  if(v>0)return'music';
+  return'story';
+}
+const PF_TO_WB={story:'novel',music:'music',video:'video'};
+
+/* 以现有项目为底，衍生创建另一类型项目（内容映射，来源配方一并继承） */
+const WB_KINDS={novel:'小说',music:'音乐',video:'短视频'};
+function spawnProj(p,from,target,extra){
+  if(from===target)throw new Error('类型相同，无需衍生');
+  const wb=loadWB();const n=wbNew(target);
+  n.name=((p.name||'未命名')+'·'+WB_KINDS[target]).slice(0,24);
+  n.src=(p.src||[]).slice().concat(Array.isArray(extra)?extra:[]);
+  const clean=s=>(s||'').trim();
+  const brought=[],missing=[];
+  const has=s=>!!clean(s);
+  if(from==='novel'){
+    const o=clean([p.outline,p.world].filter(Boolean).join('\n\n'));
+    if(target==='music'){
+      n.theme=o||clean(p.name);
+      brought.push('主题 ← 小说大纲'+(has(p.world)?'与世界观':''));
+      if(!has(n.structure))missing.push('歌曲结构');
+      if(!has(n.melody))missing.push('旋律备忘');
+      if(!(n.inst||[]).length)missing.push('乐器配置');
+      if(!(n.style||[]).length)missing.push('流派');
+      if(!(n.mood||[]).length)missing.push('氛围');
+    }else{
+      n.theme=clean(p.name);n.story=o;
+      brought.push('故事 ← 小说大纲'+(has(p.world)?'与世界观':''),'主题 ← 项目名');
+      if(!(n.shots||[]).some(s=>has(s.scene)))missing.push('分镜脚本');
+    }
+  }else if(from==='music'){
+    if(target==='novel'){
+      n.outline=[has(p.theme)?clean(p.theme):'','【音乐结构】'+clean(p.structure),'【旋律备忘】'+clean(p.melody)].filter(x=>x&&!x.endsWith('】')).join('\n\n');
+      brought.push('大纲 ← 音乐主题'+(has(p.structure)?'、结构':'')+(has(p.melody)?'、旋律备忘':''));
+      if(!has(n.world))missing.push('世界观设定');
+      if(!has(n.rules))missing.push('项目规则');
+      if(!(n.chars||[]).length)missing.push('人物');
+      if(!(n.chapters||[]).some(c=>has(c.c)||has(c.t)))missing.push('章节正文');
+    }else{
+      n.theme=clean(p.theme);n.story=clean(p.theme);
+      brought.push('主题与故事 ← 音乐主题');
+      if(!(n.shots||[]).some(s=>has(s.scene)))missing.push('分镜脚本');
+    }
+  }else{
+    if(target==='novel'){
+      n.outline=[clean(p.theme),clean(p.story)].filter(Boolean).join('\n\n');
+      brought.push('大纲 ← 短视频主题与故事');
+      if(!has(n.world))missing.push('世界观设定');
+      if(!has(n.rules))missing.push('项目规则');
+      if(!(n.chars||[]).length)missing.push('人物');
+      if(!(n.chapters||[]).some(c=>has(c.c)||has(c.t)))missing.push('章节正文');
+    }else{
+      n.theme=[clean(p.theme),clean(p.story)].filter(Boolean).join('\n\n');
+      brought.push('主题 ← 短视频主题与故事');
+      if(!has(n.structure))missing.push('歌曲结构');
+      if(!has(n.melody))missing.push('旋律备忘');
+      if(!(n.inst||[]).length)missing.push('乐器配置');
+      if(!(n.style||[]).length)missing.push('流派');
+      if(!(n.mood||[]).length)missing.push('氛围');
+    }
+  }
+  if(Array.isArray(extra)&&extra.length)brought.push('标签 '+extra.map(x=>CAT_NAME[x.cat]+'「'+x.tag+'」').join('、'));
+  wb[target+'s'].unshift(n);saveWB(wb);
+  return{kind:target,proj:n.id,fromName:p.name||'未命名',brought,missing};
+}
 
 /* 条目: {cat:'sit'|'rel'|'scene'|'mod', tag, dom} */
 function pfAdd(item){
@@ -781,10 +1024,77 @@ function pfAdd(item){
 function pfRemove(cat,tag){savePF(loadPF().filter(x=>!(x.cat===cat&&x.tag===tag)));}
 function pfClear(){savePF([]);}
 
-const CAT_NAME={sit:'情境',rel:'人物关系',scene:'故事场景',mod:'转折'};
+const CAT_NAME={sit:'情境',rel:'人物关系',scene:'故事场景',mod:'转折',view:'视角',line:'金句方向',hook:'钩子'};
 function pfText(a=loadPF()){
   const seg=a.map(x=>x.cat==='sit'?x.dom+'·'+x.tag:x.tag);
   return seg.join(' × ');
+}
+
+/* ---------- 配方模式：故事 / 音乐 / 短视频 ---------- */
+const MODES=['story','music','video'];
+const MODE_NAME={story:'故事',music:'音乐',video:'短视频'};
+const MODE_SUB={story:'短剧 / 小说选题',music:'歌曲主题与方向',video:'短视频钩子与结构'};
+/* 模式专属小池：内置，随模式参与碰撞 */
+const POOLS={
+  view:['我','你','TA','我们','旁观者'],
+  line:['口是心非','后知后觉','欲言又止','假装释怀','词不达意','来不及说'],
+  hook:['痛点直击','结果前置','反常识断言','身份反差','悬念前置','具体数字开场','冲突前置','时间倒计时']
+};
+const VIEW_LIST=POOLS.view.map(t=>({tag:t,dom:''}));
+const LINE_LIST=POOLS.line.map(t=>({tag:t,dom:''}));
+const HOOK_LIST=POOLS.hook.map(t=>({tag:t,dom:''}));
+function getMode(){const m=localStorage.getItem('sm_mode');return MODES.includes(m)?m:'story';}
+function setMode(m){if(MODES.includes(m))localStorage.setItem('sm_mode',m);}
+/* ---------- 今日配方：按日期固定种子，三种模式各一条 ---------- */
+function seededRng(seed){let a=seed;return()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function dailyPF(mode){
+  const d=new Date();
+  const seed=d.getFullYear()*10000+(d.getMonth()+1)*100+d.getDate()+MODES.indexOf(mode)*7919;
+  const rng=seededRng(seed),orig=Math.random;
+  Math.random=rng;
+  try{return randomPF(mode);}finally{Math.random=orig;}
+}
+
+/* ---------- 工作台模板预设 ---------- */
+const WB={
+  music:{
+    structs:[
+      {name:'经典流行',tpl:'主歌1（叙事铺垫）→ 导歌（情绪爬升）→ 副歌（金句记忆点）→ 主歌2 → 导歌 → 副歌 → 桥段（视角转换）→ 副歌'},
+      {name:'简洁两段',tpl:'主歌A → 副歌 → 主歌B → 副歌（短歌/民谣常用）'},
+      {name:'副歌前置',tpl:'副歌（先给记忆点）→ 主歌1 → 主歌2 → 副歌 → 桥段 → 副歌'},
+      {name:'无副歌叙事',tpl:'段落递进式叙事，每段尾句留钩（说唱/独立民谣常用）'}
+    ],
+    insts:['钢琴','木吉他','电吉他','贝斯','鼓组','弦乐','合成器','民乐','口琴','和声'],
+    styles:['流行','民谣','摇滚','R&B','古风','电子','说唱','爵士','国风'],
+    moods:['治愈','感伤','热血','慵懒','复古','梦幻','燃','安静','迷幻','史诗']
+  },
+  video:{jings:['远景','全景','中景','近景','特写']}
+};
+
+function pfOutText(a=loadPF(),mode){
+  mode=mode||getMode();
+  if(mode==='story')return pfText(a);
+  const by=c=>a.find(x=>x.cat===c);
+  if(mode==='music'){
+    const R=by('rel'),M=by('mod'),S=by('scene'),V=by('sit');
+    const W=a.filter(x=>x.cat==='view'),L=a.filter(x=>x.cat==='line'); // 视角/金句支持多选：情绪是复合的
+    const rows=[
+      ['写给',R?'「'+R.tag+'」':'____'],
+      ['视角',W.length?W.map(x=>x.tag).join('、'):'____'],
+      ['情绪落点',M?M.tag:'____'],
+      ['核心画面',S?'「'+S.tag+'」':'____'],
+      ['金句方向',L.length?L.map(x=>x.tag).join('、'):'____']
+    ];
+    return '一首'+(V?'关于'+V.dom+'·「'+V.tag+'」的':'')+'歌：'+rows.map(r=>r[0]+' '+r[1]).join('，');
+  }
+  const H=by('hook'),S=by('scene'),V=by('sit'),R=by('rel'),M=by('mod');
+  const rows=[
+    ['钩子',H?H.tag:'____'],
+    ['前3秒画面',S?'「'+S.tag+'」'+(V?'，'+V.tag:''):(V?V.dom+'·'+V.tag:'____')],
+    ['共鸣点',R?'「'+R.tag+'」':'____'],
+    ['结尾反转',M?M.tag:'____']
+  ];
+  return '短视频选题：'+rows.map(r=>r[0]+' '+r[1]).join('；');
 }
 /* 转折词 × 叙事骨架：{C}=主体画面（谁/在哪/做什么），元素以「」引用，像打出一张牌 */
 const MOD_PATTERN={
@@ -831,7 +1141,15 @@ const MOD_FIT={
  shenfen:['背叛','和解','亏欠','送别','重逢','错过','成全','救赎','报复'],
  jinzheng:['背叛','和解','牺牲','亏欠','送别','重逢','成全','救赎','报复'],
  jiaguo:['和解','牺牲','亏欠','送别','重逢','错过','成全','救赎'],
- ziran:['和解','牺牲','亏欠','送别','重逢','错过','成全','救赎']
+ ziran:['和解','牺牲','亏欠','送别','重逢','错过','成全','救赎'],
+ nixi:['背叛','和解','亏欠','重逢','错过','成全','救赎','报复'],
+ fuchou:['背叛','牺牲','亏欠','送别','重逢','错过','成全','报复','救赎'],
+ tianchong:['背叛','和解','亏欠','重逢','错过','成全','救赎'],
+ majia:['背叛','和解','亏欠','重逢','错过','成全','救赎','报复'],
+ chongsheng:['背叛','和解','亏欠','送别','重逢','错过','成全','救赎','报复'],
+ xuanyi:['背叛','和解','牺牲','亏欠','送别','重逢','错过','救赎','报复'],
+ zhichang:['背叛','和解','亏欠','重逢','错过','成全','救赎','报复'],
+ niandai:['和解','牺牲','亏欠','送别','重逢','错过','成全','救赎']
 };
 /* 转折与情境的语义排除：情境本身已含该转折的意思时，避免同义重复 */
 const MOD_EXCLUDE={
@@ -845,7 +1163,7 @@ const MOD_EXCLUDE={
 /* 取样池 = 内置 + 用户自定义（按分类并入） */
 function poolRels(base){return RELS[base]||[];}
 function poolScenes(base){return SCENES[base]||[];}
-function randomPF(){
+function randomPF(mode){
   const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
   const d=pick(DOMAINS);
   const sit=pick(flatSits(d));
@@ -862,16 +1180,26 @@ function randomPF(){
   const fit=baseFit.filter(m=>!ex.includes(m));
   const pool=fit.length?[...new Set(fit.concat(custom))]:MODIFIERS.filter(m=>!ex.includes(m));
   const m1=pick(pool);out.push({cat:'mod',tag:m1,dom:''});
+  if(mode==='music'){ // 音乐：转折词=情绪落点；视角与金句方向各抽 1~2 个（情绪是复合的）
+    const nV=Math.random()<.55?2:1,nL=Math.random()<.55?2:1;
+    [...new Set(Array.from({length:nV},()=>pick(POOLS.view)))].forEach(t=>out.push({cat:'view',tag:t,dom:''}));
+    [...new Set(Array.from({length:nL},()=>pick(POOLS.line)))].forEach(t=>out.push({cat:'line',tag:t,dom:''}));
+    return out;
+  }
+  if(mode==='video'){ // 短视频：转折词=结尾反转，再碰撞钩子类型
+    out.push({cat:'hook',tag:pick(POOLS.hook),dom:''});
+    return out;
+  }
   if(Math.random()<.35){const m2=pick(pool);if(m2!==m1)out.push({cat:'mod',tag:m2,dom:''});}
   return out;
 }
 
-/* 五组划分：和谁的事 */
+/* 分组划分：和谁的事 + 行业热门类型 */
 const GROUPS=[
- {name:'和自己的事',ids:['ziwo','gudu','shengsi','shijian','deshi']},
- {name:'和身边人的事',ids:['aiqing','qinqing','youqing','enqing','shisheng','zhongcheng']},
- {name:'和众人的事',ids:['jinqian','shenfen','gongping','jinzheng']},
- {name:'和家国的事',ids:['guxiang','jiaguo']},
+ {name:'和自己的事',ids:['ziwo','gudu','shengsi','shijian','deshi','nixi','fuchou','majia','chongsheng']},
+ {name:'和身边人的事',ids:['aiqing','tianchong','qinqing','youqing','enqing','shisheng','zhongcheng']},
+ {name:'和众人的事',ids:['jinqian','shenfen','gongping','jinzheng','xuanyi','zhichang']},
+ {name:'和家国的事',ids:['guxiang','jiaguo','niandai']},
  {name:'和世界的事',ids:['ziran']}
 ];
 
@@ -891,6 +1219,8 @@ function applyTax(){
   const on=cloudOn()&&Array.isArray(SMCloud.data.tax)&&SMCloud.data.tax.length;
   const domSrc=on?SMCloud.data.tax:BUILTIN.doms;
   DOMAINS=JSON.parse(JSON.stringify(domSrc));
+  const bm={};BUILTIN.doms.forEach(d=>bm[d.id]=d.modes);
+  DOMAINS.forEach(d=>{if(!Array.isArray(d.modes)||!d.modes.length)d.modes=bm[d.id]||['story','music','video'];});
   L1_DOM={};DOMAINS.forEach(d=>d.tree.forEach(n=>L1_DOM[n.l1]=d.name));
   SITS.length=0;DOMAINS.forEach(d=>SITS.push(...flatSits(d)));
   const pairs=on?SMCloud.data.rels:(()=>{const o=[];Object.entries(BUILTIN.rels).forEach(([l1,a])=>a.forEach(t=>o.push({tag:t,l1})));return o;})();

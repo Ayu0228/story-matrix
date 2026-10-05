@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>灵感组合 · 灵感矩阵</title>
-  <meta name="description" content="18个灵感方向、371个情境、541组人物关系、337个故事场景、10个转折词自由搭配，自定义关系与场景，数据存在你自己的 GitHub 私有仓库。">
+  <title>灵感组合 · 灵感工作台</title>
+  <meta name="description" content="26个灵感方向（共情故事+热门类型）、490+个情境、690+组人物关系、490+个故事场景自由搭配，自定义关系与场景，数据存在你自己的 GitHub 私有仓库。">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237c3aed'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white'>叙</text></svg>">
-  <link rel="stylesheet" href="assets/style.css?v=8">
+  <link rel="stylesheet" href="assets/style.css?v=17">
 </head>
 <body>
 <div class="wrap">
@@ -14,8 +14,11 @@
   <div class="kicker rise">MIX &amp; MATCH</div>
   <h1 class="title grad-t" data-chars>灵感组合</h1>
 
-  <div style="display:flex;gap:10px;margin:24px 0 22px;flex-wrap:wrap" class="rise">
+  <div class="mode-tabs rise" id="modeTabs"></div>
+
+  <div style="display:flex;gap:10px;margin:20px 0 22px;flex-wrap:wrap" class="rise">
     <button class="btn btn-pri btn-sm rip" id="btnRandom">🎲 随机配一组</button>
+    <button class="btn btn-pri btn-sm rip" id="btnToWB">去工作台创作 ▶</button>
     <button class="btn btn-ghost btn-sm rip" id="btnSave">保存</button>
     <button class="btn btn-ghost btn-sm rip" id="btnCopyTop">复制</button>
     <button class="btn btn-ghost btn-sm rip" id="btnClearTop">清空</button>
@@ -31,39 +34,68 @@
   </section>
 </div>
 
-<script src="assets/data.js?v=8"></script>
-<script src="assets/common.js?v=8"></script>
-<script src="assets/cloud.js?v=8"></script>
+<script src="assets/data.js?v=17"></script>
+<script src="assets/common.js?v=17"></script>
+<script src="assets/cloud.js?v=17"></script>
 <script>
 initPage('studio.html');
 
-/* 六列：内置四列 + 自定义两列（数据来自云存储，与内置明确区分） */
+/* 各列按模式区分：视角/金句=音乐专属（可多选），钩子=短视频专属，其余三模式通用 */
 const mineList=kind=>SMCloud.data[kind==='rel'?'rels':'scenes']
   .filter(x=>kind==='rel'?!isBuiltinRel(x.l1,x.tag):!isBuiltinScene(x.l1,x.tag))
   .map(x=>({tag:x.tag,l1:x.l1,dom:L1_DOM[x.l1]||''}));
 const CAT_META=[
- {key:'sit', title:'情境', sub:'', dot:'#a78bfa', data:SITS, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true},
- {key:'rel', title:'人物关系', sub:'', dot:'#38bdf8', data:REL_LIST, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true},
- {key:'scene', title:'故事场景', sub:'', dot:'#34d399', data:SCENE_LIST, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true},
- {key:'mod', title:'转折', sub:'', dot:'#f0abfc', data:MODIFIERS.map(t=>({tag:t})), label:x=>x.tag, src:()=>'', filter:false},
- {key:'myrel', title:'自定义人物关系', sub:'', dot:'#fbbf24', dataFn:()=>mineList('rel'), addKind:'rel'},
- {key:'myscene', title:'自定义故事场景', sub:'', dot:'#fbbf24', dataFn:()=>mineList('scene'), addKind:'scene'},
+ {key:'sit', title:'情境', sub:'', dot:'#a78bfa', data:SITS, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true, modes:MODES},
+ {key:'rel', title:'人物关系', sub:'', dot:'#38bdf8', data:REL_LIST, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true, modes:MODES},
+ {key:'scene', title:'故事场景', sub:'', dot:'#34d399', data:SCENE_LIST, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true, modes:MODES},
+ {key:'mod', title:'转折', sub:'故事=情节反转 · 音乐=情绪落点 · 视频=结尾反转', dot:'#f0abfc', data:MODIFIERS.map(t=>({tag:t})), label:x=>x.tag, src:()=>'', filter:false, modes:MODES},
+ {key:'view', title:'视角', sub:'音乐配方 · 可叠加多个', dot:'#c4b5fd', data:VIEW_LIST, label:x=>x.tag, src:()=>'', filter:true, modes:['music']},
+ {key:'line', title:'金句方向', sub:'音乐配方 · 可叠加多个', dot:'#f9a8d4', data:LINE_LIST, label:x=>x.tag, src:()=>'', filter:true, modes:['music']},
+ {key:'hook', title:'钩子', sub:'短视频配方 · 可叠加多个', dot:'#fdba74', data:HOOK_LIST, label:x=>x.tag, src:()=>'', filter:true, modes:['video']},
+ {key:'myrel', title:'自定义人物关系', sub:'', dot:'#fbbf24', dataFn:()=>mineList('rel'), addKind:'rel', modes:MODES},
+ {key:'myscene', title:'自定义故事场景', sub:'', dot:'#fbbf24', dataFn:()=>mineList('scene'), addKind:'scene', modes:MODES},
 ];
 const catOf=k=>(k==='myrel'?'rel':k==='myscene'?'scene':k);
+const modeCols=()=>CAT_META.filter(m=>(m.modes||MODES).includes(getMode()));
 
-$('#cols').innerHTML=CAT_META.map(m=>`
- <div class="col-panel rise" data-key="${m.key}">
-   <div class="col-head"><h3><span class="dot" style="background:${m.dot};box-shadow:0 0 10px ${m.dot}"></span>${m.title}
-     <span class="col-count" id="cnt-${m.key}"></span></h3><div class="sub">${m.sub}</div></div>
-   ${m.addKind?`<button class="col-add rip" data-add="${m.addKind}">＋ 添加</button>`:''}
-   ${m.key==='mod'?`<button class="col-add rip" data-addmod>＋ 添加转折词</button>`:''}
-   ${m.filter?`<div class="col-filter">
-     <input id="q-${m.key}" placeholder="筛选…">
-     ${m.key==='sit'?`<select id="domFilter"><option value="">全部</option>${DOMAINS.map(d=>`<option>${d.name}</option>`).join('')}</select>`:''}
-   </div>`:''}
-   <div class="col-cloud" id="cloud-${m.key}"></div>
- </div>`).join('');
-stagger();
+/* ---------- 配方模式切换 ---------- */
+function paintTabs(){
+  $('#modeTabs').innerHTML=MODES.map(m=>`
+    <button class="mode-tab ${getMode()===m?'on':''}" data-mode="${m}">
+      <b>${MODE_NAME[m]}模式</b><small>${MODE_SUB[m]}</small>
+    </button>`).join('');
+}
+paintTabs();
+$('#modeTabs').addEventListener('click',e=>{
+  const t=e.target.closest('.mode-tab');if(!t)return;
+  setMode(t.dataset.mode);
+  paintTabs();renderDock();renderCols();
+  toast('已切换：'+MODE_NAME[t.dataset.mode]+'模式（列内容与文案输出已切换）');
+});
+
+function renderCols(){
+  $('#cols').innerHTML=modeCols().map(m=>`
+   <div class="col-panel rise" data-key="${m.key}">
+     <div class="col-head"><h3><span class="dot" style="background:${m.dot};box-shadow:0 0 10px ${m.dot}"></span>${m.title}
+       <span class="col-count" id="cnt-${m.key}"></span></h3><div class="sub">${m.sub}</div></div>
+     ${m.addKind?`<button class="col-add rip" data-add="${m.addKind}">＋ 添加</button>`:''}
+     ${m.key==='mod'?`<button class="col-add rip" data-addmod>＋ 添加转折词</button>`:''}
+     ${m.filter?`<div class="col-filter">
+       <input id="q-${m.key}" placeholder="筛选…">
+       ${m.key==='sit'?`<select id="domFilter"><option value="">全部</option>${DOMAINS.map(d=>`<option>${d.name}</option>`).join('')}</select>`:''}
+     </div>`:''}
+     <div class="col-cloud" id="cloud-${m.key}"></div>
+   </div>`).join('');
+  stagger();
+  paintAll();
+}
+/* 筛选输入：全局委托，列重建后无需重新绑定 */
+$('#cols').addEventListener('input',e=>{
+  if(e.target.id&&e.target.id.startsWith('q-'))paintCol(e.target.id.slice(2));
+});
+$('#cols').addEventListener('change',e=>{
+  if(e.target.id==='domFilter')paintCol('sit');
+});
 
 function paintCol(key){
   const m=CAT_META.find(x=>x.key===key);
@@ -87,16 +119,11 @@ function paintCol(key){
       <span class="plus">+</span>${esc(m.label(x))}${custom?'<span class="mine-tag">自定义</span>':''}${m.src(x)?` <span class="src">${esc(m.src(x))}</span>`:''}${crud}</span>`;
   }).join('')||`<div class="empty-hint">${m.addKind||m.key==='mod'?'还没有，点上方「添加」创建':'无匹配'}</div>`;
 }
-function paintAll(){CAT_META.forEach(m=>paintCol(m.key));}
-SMCloud.ready.then(paintAll);
-SMCloud.onData(paintAll);
+function paintAll(){modeCols().forEach(m=>paintCol(m.key));}
+SMCloud.ready.then(renderCols);
+SMCloud.onData(()=>{if($('#cols').children.length)paintAll();else renderCols();});
 
-CAT_META.filter(m=>m.filter).forEach(m=>{
-  $('#q-'+m.key).addEventListener('input',()=>paintCol(m.key));
-});
-const df=$('#domFilter');
-if(df)df.addEventListener('change',()=>paintCol('sit'));
-
+renderCols(); /* 首屏立即渲染（离线可用），云数据到位后 ready 再刷新一次 */
 /* 点击：删除自定义 / 添加自定义 / 转折词增删改 / 入配方 */
 $('#cols').addEventListener('click',async e=>{
   const del=e.target.closest('.mine-del');
@@ -176,19 +203,25 @@ function openAddModal(kind){
 /* 随机 / 保存 / 复制 / 清空 */
 function doRandom(){
   pfClear();
-  randomPF().forEach(x=>pfAdd(x));
+  randomPF(getMode()).forEach(x=>pfAdd(x));
   renderDock();paintAll();
-  toast('已随机配好一组，可直接复制');
+  toast('已随机配好一组'+MODE_NAME[getMode()]+'配方，可直接复制');
 }
 $('#btnRandom').addEventListener('click',doRandom);
 $('#btnClearTop').addEventListener('click',()=>{pfClear();renderDock();paintAll();toast('已清空');});
 $('#btnCopyTop').addEventListener('click',()=>{
   const a=loadPF();
   if(!a.length)return toast('配方是空的');
-  copyText(pfText(a),'配方已复制');
+  copyText(pfOutText(a),MODE_NAME[getMode()]+'配方已复制');
 });
-$('#btnSave').addEventListener('click',()=>{
-  const a=loadPF();
+/* 配方 → 工作台：按配方内容识别类型（视角/金句=音乐，钩子=短视频），
+   弹窗锁定当前模式：只能创建对应类型项目；跨模式请在工作台用「以此项目新建」衍生 */
+$('#btnToWB').addEventListener('click',()=>{
+  const pf=loadPF();
+  if(!pf.length)return toast('配方篮是空的：先随机配一组，或点列里的 ＋ 添加');
+  wbSendModal(pf,null,getMode()); // 锁定：只能创建当前模式对应类型
+});
+$('#btnSave').addEventListener('click',()=>{  const a=loadPF();
   if(a.length<2)return toast('至少组合 2 个元素再保存');
   const sv=loadSV();
   sv.unshift({t:Date.now(),items:a});
