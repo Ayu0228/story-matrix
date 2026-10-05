@@ -96,8 +96,9 @@ async function testCfg(c){
   if(!r.ok)throw new Error('连接失败（'+r.status+'）');
   return r.json();
 }
+let loaded=false;
 async function load(){
-  if(!cfg){data=blank();norm();setState('off');return;}
+  if(!cfg){data=blank();norm();setState('off');loaded=true;return;}
   setState('busy','正在连接存储…');
   try{
     const j=await gh('/repos/'+cfg.owner+'/'+cfg.repo+'/contents/'+FILE,{allow404:true});
@@ -105,6 +106,7 @@ async function load(){
     else{sha=null;data=blank();}
     norm();setState('ok');emit();
   }catch(e){console.warn('[cloud]',e);data=blank();norm();setState('err',e.message);}
+  loaded=true;
 }
 function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(flushSave,1100);}
 async function flushSave(opt={}){
@@ -146,8 +148,9 @@ const api={
   },
   disconnect(){cfg=null;persistCfg();localStorage.removeItem(LS_TOK);sessionStorage.removeItem(SS_TOK);sha=null;data=blank();setState('off');emit();},
   async ensureConnected(){
-    if(cfg&&state==='ok')return true;
-    openConnectModal();return false;
+    if(cfg&&loaded)return true; /* 已配置且数据就绪即放行：同步中/同步失败不影响内存写入，保存队列会自动重试 */
+    if(!cfg){openConnectModal();return false;}
+    toast('正在载入云端数据，请稍候…');return false; /* 首次加载完成前禁止改数据，避免被随后的载入覆盖 */
   },
   addRel(tag,l1){norm();if(!data.rels.some(x=>x.tag===tag&&x.l1===l1)){data.rels.push({tag,l1});touch();emit();return true;}return false;},
   delRel(tag,l1){norm();const n=data.rels.length;data.rels=data.rels.filter(x=>!(x.tag===tag&&x.l1===l1));if(data.rels.length!==n){touch();emit();return true;}return false;},

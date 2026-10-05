@@ -6,7 +6,7 @@
   <title>灵感组合 · 灵感工作台</title>
   <meta name="description" content="26个灵感方向（共情故事+热门类型）、490+个情境、690+组人物关系、490+个故事场景自由搭配，自定义关系与场景，数据存在你自己的 GitHub 私有仓库。">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237c3aed'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white'>叙</text></svg>">
-  <link rel="stylesheet" href="assets/style.css?v=19">
+  <link rel="stylesheet" href="assets/style.css?v=20">
 </head>
 <body>
 <div class="wrap">
@@ -34,9 +34,9 @@
   </section>
 </div>
 
-<script src="assets/data.js?v=19"></script>
-<script src="assets/common.js?v=19"></script>
-<script src="assets/cloud.js?v=19"></script>
+<script src="assets/data.js?v=20"></script>
+<script src="assets/common.js?v=20"></script>
+<script src="assets/cloud.js?v=20"></script>
 <script>
 initPage('studio.html');
 
@@ -169,15 +169,15 @@ $('#cols').addEventListener('click',async e=>{
     return;
   }
   const add=e.target.closest('[data-add]');
-  if(add){openAddModal(add.dataset.add);return;}
+  if(add){await openAddModal(add.dataset.add);return;}
   const c=e.target.closest('.chip[data-k]');if(!c)return;
   quickAdd({cat:catOf(c.dataset.k),tag:c.dataset.t,dom:c.dataset.d});
   paintAll();
 });
 
 /* 添加自定义弹窗：名称 + 所属分类（随机配方与下钻按分类归位） */
-function openAddModal(kind){
-  if(!SMCloud.ensureConnected())return toast('请先连接存储（右上角「存储」）');
+async function openAddModal(kind){
+  if(!(await SMCloud.ensureConnected()))return toast('请先连接存储（右上角「存储」）');
   const isRel=kind==='rel';
   SMCloud.openModal({
     title:isRel?'添加自定义人物关系':'添加自定义故事场景',
