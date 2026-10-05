@@ -907,7 +907,7 @@ let STATS={domains:DOMAINS.length,l1:DOMAINS.reduce((a,d)=>a+d.tree.length,0),ta
 /* 配方托盘：localStorage 持久化 */
 /* 已连接云存储时数据全部写 GitHub 私有仓库；未连接时降级本浏览器并在顶栏提示 */
 const PF_KEY='sm_peifang', SV_KEY='sm_saved';
-const cloudOn=()=>window.SMCloud&&SMCloud.isOn();
+const cloudOn=()=>window.SMCloud&&SMCloud.isActive(); /* 数据读写路由只看「是否配置了云端」，同步 busy/err 期间不回退本地，避免读写源抖动导致配方/项目忽有忽无 */
 const loadPF=()=>{if(cloudOn())return SMCloud.data.pf;try{return JSON.parse(localStorage.getItem(PF_KEY))||[]}catch(e){return[]}};
 const savePF=a=>{if(cloudOn())SMCloud.savePF(a);else localStorage.setItem(PF_KEY,JSON.stringify(a));};
 const loadSV=()=>{if(cloudOn())return SMCloud.data.saved;try{return JSON.parse(localStorage.getItem(SV_KEY))||[]}catch(e){return[]}};

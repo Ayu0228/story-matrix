@@ -203,10 +203,14 @@ function wbSendModal(pf,defKind,lock){
       m.addEventListener('change',e=>{if(e.target.name==='wbk')sync();});
       sync();
     },
-    onOk:m=>{
+    onOk:async m=>{
       const k=m.querySelector('input[name=wbk]:checked').value;
       const name=m.querySelector('#wbPName').value;
       const r=sendPFToWB(pf,k,name);
+      if(cloudOn()){ /* 云模式：等写入完成再跳转，否则新页面会拉到旧数据 */
+        try{await SMCloud.flush();}
+        catch(e){toast('同步失败：'+e.message);return false;}
+      }
       location.href='workbench.html?kind='+r.kind+'&proj='+r.proj;
     }});
 }

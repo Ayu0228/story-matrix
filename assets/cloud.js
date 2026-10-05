@@ -107,14 +107,14 @@ async function load(){
   }catch(e){console.warn('[cloud]',e);data=blank();norm();setState('err',e.message);}
 }
 function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(flushSave,1100);}
-async function flushSave(){
+async function flushSave(opt={}){
   if(!cfg||!data)return;
   if(saving){dirty=true;return;}
   saving=true;setState('busy','同步中…');
   try{
     const body={message:'story-matrix 数据更新',content:b64u(JSON.stringify(data,null,2)),branch:'main'};
     if(sha)body.sha=sha;
-    const j=await gh('/repos/'+cfg.owner+'/'+cfg.repo+'/contents/'+FILE,{method:'PUT',body:JSON.stringify(body)});
+    const j=await gh('/repos/'+cfg.owner+'/'+cfg.repo+'/contents/'+FILE,{method:'PUT',body:JSON.stringify(body),keepalive:!!opt.keepalive});
     if(j&&j.content)sha=j.content.sha;
     dirty=false;setState('ok');
   }catch(e){
@@ -124,7 +124,7 @@ async function flushSave(){
 }
 function touch(){dirty=true;queueSave();}
 /* 关页时若有未同步修改，立即冲刷（浏览器通常仍会让请求完成） */
-addEventListener('pagehide',()=>{if(!cfg||!data||!dirty)return;clearTimeout(saveTimer);flushSave();});
+addEventListener('pagehide',()=>{if(!cfg||!data||!dirty)return;clearTimeout(saveTimer);flushSave({keepalive:true});});
 
 /* ---------- 对外业务接口 ---------- */
 const api={
@@ -132,6 +132,10 @@ const api={
   get state(){return state;},
   get ready(){return readyP;},
   onState,onData,
+  async flush(){ /* 立即同步：跨页跳转前调用，避免新页面拉到旧数据 */
+    for(let i=0;i<40&&saving;i++)await new Promise(r=>setTimeout(r,150));
+    return flushSave();
+  },
   async connect(c,remember){
     c={owner:(c.owner||'').trim(),repo:(c.repo||'').trim(),token:(c.token||'').trim()};
     if(!c.owner||!c.repo||!c.token)throw new Error('请填写完整：用户名、仓库名、令牌');
@@ -259,7 +263,8 @@ const api={
     data.wb=wb;touch();emit();return true;
   },
   savePF(pf){norm();data.pf=pf;touch();},
-  isOn(){return !!cfg&&state==='ok';}
+  isOn(){return !!cfg&&state==='ok';},
+  isActive(){return !!cfg;} /* 是否配置了云端存储：数据读写路由只看这个，避免同步中(busy)读写源在云端/本地之间抖动 */
 };
 window.SMCloud=api;
 

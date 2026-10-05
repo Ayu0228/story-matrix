@@ -6,7 +6,7 @@
 <title>创作工作台 · 灵感工作台</title>
 <meta name="description" content="小说、音乐、短视频三模块创作工作台：分章写作、大纲世界观、音乐结构风格、分镜脚本，数据存在你自己的 GitHub 私有仓库。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237c3aed'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white'>叙</text></svg>">
-<link rel="stylesheet" href="assets/style.css?v=17">
+<link rel="stylesheet" href="assets/style.css?v=19">
 <style>
 /* 工作台专属 */
 .wb-tabs{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
@@ -81,9 +81,9 @@
   </div>
 </div>
 
-<script src="assets/data.js?v=17"></script>
-<script src="assets/common.js?v=17"></script>
-<script src="assets/cloud.js?v=17"></script>
+<script src="assets/data.js?v=19"></script>
+<script src="assets/common.js?v=19"></script>
+<script src="assets/cloud.js?v=19"></script>
 <script>
 initPage('workbench.html');
 
@@ -92,7 +92,7 @@ const KINDS=WB_KINDS; /* 定义在 data.js，全站统一 */
 const cur={kind:'novel',sel:{novel:null,music:null,video:null}};
 let cache=loadWB();
 let saveTimer=null,selfSave=0;
-function commit(){selfSave=Date.now();if(cloudOn())SMCloud.saveWB(cache);else localStorage.setItem(WB_KEY,JSON.stringify(cache));} /* 本地写入标记，用于跳过自己触发的云回环 */
+function commit(){selfSave=Date.now();if(cloudOn()){SMCloud.saveWB(cache);try{localStorage.setItem(WB_KEY,JSON.stringify(cache));}catch(_){}}else localStorage.setItem(WB_KEY,JSON.stringify(cache));} /* 云端模式也镜像一份到本地：关页瞬间等不及同步时，下次连接会把本地项目并回云端；selfSave 用于跳过自己触发的云回环 */
 function scheduleSave(){
   $('#saveSt')&&($('#saveSt').textContent='编辑中…');
   clearTimeout(saveTimer);
@@ -437,21 +437,33 @@ SMCloud.onData(()=>{
           (ls[k]||[]).forEach(p=>{if(p&&p.id&&!remote[k].some(x=>x.id===p.id)){remote[k].unshift(p);added=true;}});
         });
         localStorage.removeItem(WB_KEY);
-        if(added){cache=remote;commit();toast('已把本浏览器里的工作台项目并入私有仓库');paintSide();paintEditor();return;}
+        if(added){cache=remote;commit();applyDeepLink();toast('已把本浏览器里的工作台项目并入私有仓库');paintSide();paintEditor();return;}
       }
     }catch(e){}
   }
   if(Date.now()-selfSave<3000)return;
-  cache=loadWB();paintSide();paintEditor();
+  cache=loadWB();applyDeepLink();paintSide();paintEditor();
 });
-/* 记住上次模块；深链：从灵感页「送去工作台」跳进来 ?kind=music&proj=xxx */
+/* 记住上次模块；深链：从灵感页「送去工作台」跳进来 ?kind=music&proj=xxx。
+   云模式下 cache 要等 SMCloud.ready 才有数据，所以先记下参数，就绪/刷新后反复尝试直到命中 */
+let deepLink=null,deepDone=false;
 (function(){
   try{const k=localStorage.getItem('sm_wb_kind');if(k&&WB_KINDS[k])cur.kind=k;}catch(_){}
   const sp=new URLSearchParams(location.search);
   const k=sp.get('kind'),pid=sp.get('proj');
-  if(k&&WB_KINDS[k]&&cache[k+'s'].some(p=>p.id===pid)){cur.kind=k;cur.sel[k]=pid;try{localStorage.setItem('sm_wb_kind',k);}catch(_){}}
+  if(k&&WB_KINDS[k]&&pid)deepLink={k,pid};
   if(location.search)history.replaceState(null,'',location.pathname);
 })();
+function applyDeepLink(){
+  if(deepDone||!deepLink)return;
+  const{k,pid}=deepLink;
+  if(cache[k+'s']&&cache[k+'s'].some(p=>p.id===pid)){
+    cur.kind=k;cur.sel[k]=pid;try{localStorage.setItem('sm_wb_kind',k);}catch(_){}
+    deepDone=true;deepLink=null;
+  }
+}
+applyDeepLink();
+SMCloud.ready.then(()=>{applyDeepLink();paintTabs();paintSide();paintEditor();});
 paintTabs();paintSide();paintEditor();
 </script>
 </body>
