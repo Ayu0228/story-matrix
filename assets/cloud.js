@@ -31,6 +31,12 @@ function norm(){
     data.mods=(typeof BUILTIN!=='undefined')?JSON.parse(JSON.stringify(BUILTIN.mods)):[];
     data.v=3;
   }
+  // v5 → v6：模式池入云（视角/金句/钩子/结尾钩子，此前为内置常量不可改）
+  if(!data.pools||typeof data.pools!=='object'||Array.isArray(data.pools)){
+    data.pools=(typeof BUILTIN!=='undefined')?JSON.parse(JSON.stringify(BUILTIN.pools)):{view:[],line:[],hook:[],endhook:[]};
+    data.v=6;
+  }
+  ['view','line','hook','endhook'].forEach(k=>{if(!Array.isArray(data.pools[k]))data.pools[k]=[];});
   // v4 → v5：行业扩充包合入（新增方向整体补入；已有方向把缺失的分类/标签/关系/场景补回。
   //          用户自己新增、改名的内容不受影响；用户删除过的内置条目会随本次扩充重新出现。）
   if(typeof BUILTIN!=='undefined'){
@@ -55,7 +61,7 @@ function norm(){
       Object.entries(BUILTIN.rels).forEach(([l1,arr])=>arr.forEach(tag=>{if(!has(l1,tag))data.rels.push({tag,l1});}));
       Object.entries(BUILTIN.scenes).forEach(([l1,arr])=>arr.forEach(tag=>{if(!hasS(l1,tag))data.scenes.push({tag,l1});}));
     }
-    data.v=5;
+    data.v=6;
   }
 }
 function loadCfg(){
@@ -257,6 +263,27 @@ const api={
     norm();const i=data.mods.indexOf(tag);
     if(i<0)return false;
     data.mods.splice(i,1);touch();emit();return true;
+  },
+  /* ---------- 模式池 CRUD（视角/金句/钩子/结尾钩子） ---------- */
+  _pool(k){if(!['view','line','hook','endhook'].includes(k))throw new Error('未知池类型');return k;},
+  addPool(k,tag){
+    k=this._pool(k);norm();tag=(tag||'').trim();
+    if(!tag)throw new Error('请填写名称');
+    if(data.pools[k].includes(tag))throw new Error('已有同名条目');
+    data.pools[k].push(tag);touch();emit();return true;
+  },
+  renamePool(k,oldT,newT){
+    k=this._pool(k);norm();newT=(newT||'').trim();
+    if(!newT)throw new Error('请填写名称');
+    const i=data.pools[k].indexOf(oldT);
+    if(i<0)throw new Error('要修改的条目不存在');
+    if(data.pools[k].includes(newT)&&newT!==oldT)throw new Error('已有同名条目');
+    data.pools[k][i]=newT;touch();emit();return true;
+  },
+  delPool(k,tag){
+    k=this._pool(k);norm();const i=data.pools[k].indexOf(tag);
+    if(i<0)return false;
+    data.pools[k].splice(i,1);touch();emit();return true;
   },
   saveSaved(sv){norm();data.saved=sv;touch();},
   saveWB(wb){

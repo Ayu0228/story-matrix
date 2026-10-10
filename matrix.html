@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>灵感方向 · 灵感工作台</title>
-<link rel="stylesheet" href="assets/style.css?v=20">
+<link rel="stylesheet" href="assets/style.css?v=32">
 <style>
 /* 灵感工作台·方向页专属 */
 .crumbs{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:26px;flex-wrap:wrap;min-height:22px}
@@ -13,6 +13,12 @@
 .crumb.on{background:var(--grad);color:#160b2e;font-weight:800;border-color:transparent}
 .crumb-sep{color:var(--dimmer)}
 .dom-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.pool-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:4px 0 18px}
+.pool-card{padding:13px 15px}
+.pool-t{font-size:12.5px;font-weight:700;letter-spacing:.06em;margin-bottom:9px}
+.pool-c{color:var(--dim);font-weight:400;font-size:11px;margin-left:4px}
+.pool-chips{display:flex;flex-wrap:wrap;gap:6px}
+.pool-chips .chip{font-size:12px;padding:2.5px 10px;cursor:default}
 .dom-card{padding:22px 20px 18px}
 .dom-card h3{font-size:19px;font-weight:900}
 .dom-card .cnt{font-size:11px;color:var(--dimmer);margin-top:7px;letter-spacing:.08em}
@@ -77,11 +83,10 @@
   <div class="sr-foot"><span>↑↓ 移动</span><span>↵ 跳过去</span><span>+ 直接入配方</span><span>esc 关闭</span></div>
 </div>
 
-<script src="assets/data.js?v=20"></script>
-<script src="assets/common.js?v=20"></script>
-<script src="assets/cloud.js?v=20"></script>
+<script src="assets/data.js?v=32"></script>
+<script src="assets/common.js?v=32"></script>
+<script src="assets/cloud.js?v=32"></script>
 <script>
-initPage('matrix.html');
 const stage=$('#stage'),crumbs=$('#crumbs');
 const sel={dom:null,l1:null};
 
@@ -108,11 +113,32 @@ const getDMode=()=>{const m=localStorage.getItem(DM_KEY);return MODES.includes(m
 const setDMode=m=>{if(MODES.includes(m))localStorage.setItem(DM_KEY,m);};
 const domInMode=(d,m)=>(d.modes||['story','music','video']).includes(m);
 const MODE_BADGE={story:'故事',music:'音乐',video:'短视频'};
-function domBadges(d){
-  const ms=d.modes||['story','music','video'];
-  if(ms.length>=3)return `<span class="dm-badge all">通用</span>`;
-  return ms.map(m=>`<span class="dm-badge ${m}">${MODE_BADGE[m]||m}</span>`).join('');
+function domBadges(d){ /* 侧重角标：当前所选模式排第一且字号加大，便于辨别；●●● 主赛道 ●●○ 成熟品类 ●○○ 细分少用 */
+  const f=d.fit||{music:2,video:2,story:2};
+  const cur=getDMode();
+  const order=[cur,...MODES.filter(m=>m!==cur)];
+  const ic={music:'🎵',video:'🎬',story:'📖'};
+  const seg=(m)=>{const n=f[m];const lb=n===3?'主赛道':n===2?'成熟品类':'细分少用';
+    return `<span class="fit-seg ${m===cur?'cur':''}" title="${MODE_BADGE[m]}·${lb}">${ic[m]}${'●'.repeat(n)}${'○'.repeat(3-n)}</span>`;};
+  return `<span class="dm-fit">${order.map(seg).join('')}</span>`;
 }
+/* 模式池区：固定五层（方向/分类/情境/关系/场景）三模式一致；钩子/反转/视角按当前模式各显各的（与灵感组合同一数据源） */
+const MODE_POOLS={
+ story:[['mod','情节反转'],['view','叙事视角'],['hook','开篇钩子'],['endhook','结尾钩子']],
+ music:[['mod','情绪落点'],['view','歌词人称'],['line','副歌Hook句'],['hook','歌名钩子']],
+ video:[['mod','结尾反转'],['view','叙事视角'],['hook','前三秒钩子'],['line','反转台词']]
+};
+/* 池区：与「适合的人物关系/适合的故事场景」同一套展现与交互（chips 可点+收进配方，✎ 改名，✕ 删除，＋ 新增） */
+const POOL_COLOR={mod:'#f0abfc',view:'#c4b5fd',hook:'#fdba74',endhook:'#fbbf24',line:'#f9a8d4'};
+const poolName=k=>{const p=MODE_POOLS[getDMode()].find(x=>x[0]===k);return p?p[1]:k;};
+const poolSide=(k,nm,color)=>{const arr=k==='mod'?MODIFIERS:POOLS[k];return `
+  <div class="grp-name" style="margin-top:18px;color:${color}">${nm} · ${arr.length} 个<button class="grp-add" data-gp="${k}">＋ 新增</button></div>
+  <div class="chip-cloud">${arr.map(t=>`<span class="chip rip" data-add="${k}" data-tag="${esc(t)}" data-dom="">
+    <span class="plus">+</span>${esc(t)}<span class="crud">
+      <button data-ep="${k}" data-t="${encodeURIComponent(t)}" title="重命名">✎</button>
+      <button data-dp="${k}" data-t="${encodeURIComponent(t)}" class="del" title="删除">✕</button>
+    </span></span>`).join('')||'<span class="empty-hint" style="padding:10px 0;font-size:12.5px">还没有，点「＋ 新增」添加</span>'}</div>`;};
+const poolArea=m=>MODE_POOLS[m].map(([k,nm])=>poolSide(k,nm,POOL_COLOR[k])).join('');
 const domCard=(d,i)=>{
   const n=flatSits(d).length;
   const samp=d.tree.length?(d.tree[0].tags?d.tree[0].tags.slice(0,2).join(' · '):(d.tree[0].groups?d.tree[0].groups[0].tags.slice(0,2).join(' · '):'')):'还没有内容';
@@ -121,22 +147,15 @@ const domCard=(d,i)=>{
     <h3>${esc(d.name)}<span class="dm-badges">${domBadges(d)}</span></h3>
     <div class="cnt">${d.tree.length} 类 · ${n} 个情境</div>
     <div class="samp">${esc(samp)}…</div>
-    <span class="crud">
-      <button data-ed-dom="${d.id}" title="重命名方向">✎</button>
-      <button data-dd-dom="${d.id}" class="del" title="删除方向">✕</button>
-    </span>
   </div>`;
 };
 function renderDomGrid(){
   renderCrumbs();
   const m=getDMode();
-  const list=DOMAINS.filter(d=>domInMode(d,m));
-  $('#domTabTip').textContent=m==='story'
-    ?'故事模式可用全部方向：带「通用」徽章的三模式皆宜，其余为故事或短视频向'
-    :(m==='music'?'音乐模式适用方向：通用情感议题最适合写成歌，进灵感组合别忘了选视角与金句方向'
-    :'短视频模式适用方向：通用 + 短剧高频题材，进灵感组合别忘了选钩子');
+  const list=DOMAINS.filter(d=>domInMode(d,m))
+    .sort((a,b)=>(((b.fit||{})[m])||2)-(((a.fit||{})[m])||2)); /* 当前模式侧重高的排前 */
+  $('#domTabTip').textContent='●●●=该模式主赛道 · ●●○=成熟品类 · ●○○=细分少用';
   stage.innerHTML=`<div class="rise"><div class="dom-grid">${list.map((d,i)=>domCard(d,i)).join('')}
-      <div class="card dom-card add-card rip" data-adddom="1"><h3 style="font-size:17px">＋ 新建方向</h3><div class="cnt">创建你自己的灵感方向</div></div>
     </div></div>`;
   stagger();
 }
@@ -145,6 +164,7 @@ $('#domTabs').addEventListener('click',e=>{
   setDMode(t.dataset.dmode);
   $$('#domTabs .mode-tab').forEach(x=>x.classList.toggle('on',x===t));
   renderDomGrid();
+  renderDock(); /* 配方篮标签/公式随本页模式切换 */
 });
 /* 初始化 tab 高亮 */
 $$('#domTabs .mode-tab').forEach(x=>x.classList.toggle('on',x.dataset.dmode===getDMode()));
@@ -208,7 +228,9 @@ function renderL2(){
   };
   $('#l2box').innerHTML=`<div class="sit-panel rise in" style="animation:riseIn .5s var(--ease) both">
     <div class="grp-name" style="margin-top:6px">「${esc(n.l1)}」 · 点 + 收进配方${grpAdd('')}</div>${inner}
-    ${side('适合的人物关系','#7dd3fc','rel')}${side('适合的故事场景','#6ee7b7','scene')}</div>`;
+    ${side('适合的人物关系','#7dd3fc','rel')}${side('适合的故事场景','#6ee7b7','scene')}
+    <div class="grp-name" style="margin-top:22px;color:#f0abfc">本模式结构池 · ${MODE_NAME[getDMode()]}模式专属（与灵感组合同一数据源）</div>
+    ${poolArea(getDMode())}</div>`;
 }
 
 /* ---------- 点击 + 入配方 ---------- */
@@ -232,45 +254,9 @@ const nameModal=(title,label,val,ph,onSave)=>SMCloud.openModal({
 });
 document.addEventListener('click',async e=>{
   const q=s=>e.target.closest(s);let m;
-  /* ===== 方向 ===== */
-  if(m=q('[data-adddom]')){
-    if(!(await guard()))return;
-    SMCloud.openModal({
-      title:'新建方向',okText:'创建',
-      body:`<label class="sm-field"><span>方向名称</span><input id="smIn" placeholder="例如：科幻、电竞、宠物…" autocomplete="off"></label>
-        <div class="sm-field"><span>适用模式（不选则三模式通用）</span>
-          <div class="wb-chips" id="dmModeChips" style="margin-top:8px">${MODES.map(mm=>`<span class="chip rip on" data-mmode="${mm}">${MODE_BADGE[mm]}</span>`).join('')}</div>
-        </div>`,
-      onReady:m2=>{
-        m2.querySelector('#dmModeChips').addEventListener('click',e2=>{
-          const c=e2.target.closest('[data-mmode]');if(!c)return;
-          c.classList.toggle('on');
-        });
-      },
-      onOk:m2=>{
-        const v=m2.querySelector('#smIn').value.trim();
-        if(!v)return false;
-        const modes=[...m2.querySelectorAll('[data-mmode].on')].map(x=>x.dataset.mmode);
-        SMCloud.addDom(v,modes);
-        toast('方向已创建，点进去添加分类吧');
-      }});
-    return;
-  }
-  else if(m=q('[data-ed-dom]')){
-    if(!(await guard()))return;
-    const d=DOMAINS.find(x=>x.id===m.dataset.edDom);if(!d)return;
-    nameModal('重命名方向','方向名称',d.name,'',v=>{SMCloud.renameDom(d.id,v);toast('已改名');});
-  }
-  else if(m=q('[data-dd-dom]')){
-    if(!(await guard()))return;
-    const d=DOMAINS.find(x=>x.id===m.dataset.ddDom);if(!d)return;
-    const nSit=flatSits(d).length;
-    SMCloud.openModal({title:'删除方向',okText:'确认删除',
-      body:`<p class="sm-tip">将永久删除方向「<b>${esc(d.name)}</b>」下的 <b>${d.tree.length}</b> 个分类、<b>${nSit}</b> 个情境，以及该方向所有的人物关系、场景。此操作不可恢复。</p>`,
-      onOk:()=>{const r=SMCloud.delDom(d.id);toast(`已删除（连带 ${r.cats} 个分类、${r.sits} 个情境）`);if(sel.dom===d.id){sel.dom=null;sel.l1=null;}}});
-  }
+  /* 方向层已封闭（18 个基本经验域够用，不再提供新增/编辑/删除入口）；分类及以下保持可增删改 */
   /* ===== 分类 ===== */
-  else if(m=q('[data-addcat]')){
+  if(m=q('[data-addcat]')){
     if(!(await guard()))return;
     nameModal('新建分类','分类名称','','例如：误会、重逢、和解…',v=>{SMCloud.addCat(sel.dom,v);toast('分类已创建，点它添加情境');});
   }
@@ -317,6 +303,26 @@ document.addEventListener('click',async e=>{
     const n=curCat(),cat=m.dataset.ei,oldT=decodeURIComponent(m.dataset.t);
     nameModal(cat==='rel'?'重命名人物关系':'重命名故事场景',cat==='rel'?'关系描述':'场景描述',oldT,'',
       v=>{cat==='rel'?SMCloud.renameRel(n.l1,oldT,v):SMCloud.renameScene(n.l1,oldT,v);toast('已改名');});
+  }
+  /* ===== 模式池（视角/金句/钩子/结尾钩子/转折词）：新增 / 重命名 / 删除 ===== */
+  else if(m=q('[data-gp]')){
+    if(!(await guard()))return;
+    const k=m.dataset.gp,nm=poolName(k);
+    nameModal('新增「'+nm+'」','名称','',nm==='转折词'?'例如：坦白、诀别、反杀…':'例如：记忆闪回、第二人称…',
+      v=>{k==='mod'?SMCloud.addMod(v):SMCloud.addPool(k,v);toast('已添加');});
+  }
+  else if(m=q('[data-ep]')){
+    if(!(await guard()))return;
+    const k=m.dataset.ep,oldT=decodeURIComponent(m.dataset.t),nm=poolName(k);
+    nameModal('重命名「'+nm+'」','名称',oldT,'',
+      v=>{k==='mod'?SMCloud.renameMod(oldT,v):SMCloud.renamePool(k,oldT,v);toast('已改名');});
+  }
+  else if(m=q('[data-dp]')){
+    if(!(await guard()))return;
+    const k=m.dataset.dp,t=decodeURIComponent(m.dataset.t),nm=poolName(k);
+    SMCloud.openModal({title:'删除「'+nm+'」条目',okText:'确认删除',
+      body:`<p class="sm-tip">将永久删除「<b>${esc(t)}</b>」。此操作不可恢复。</p>`,
+      onOk:()=>{k==='mod'?SMCloud.delMod(t):SMCloud.delPool(k,t);toast('已删除');}});
   }
   else if(m=q('[data-di]')){
     if(!(await guard()))return;
@@ -412,6 +418,9 @@ srList.addEventListener('click',e=>{
 const h=location.hash.slice(1);
 if(h&&DOMAINS.some(d=>d.id===h)){sel.dom=h;renderL1();}
 else renderDomGrid();
+/* 页面初始化放最后：配方篮/去创作锁定 跟随本页模式 tab（getDMode），不用全局 sm_mode */
+initPage('matrix.html',true,()=>getDMode());
+renderDock();
 </script>
 </body>
 </html>

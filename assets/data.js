@@ -47,7 +47,7 @@ let DOMAINS=[
    {name:'重逢',tags:['同学会','街头偶遇','孩子同班']},
    {name:'偿还',tags:['恩义相酬','迟到的道歉','替他完成遗愿']},
    {name:'释怀或意难平',tags:['相视一笑','再也回不到从前']}]}],},
-{id:'shisheng',name:'师生',modes:['story'],tree:[
+{id:'shisheng',name:'师生',modes:['story','music','video'],tree:[
  {l1:'入门',tags:['初入门被严训','笨拙出丑','第一次被夸奖']},
  {l1:'叛逆',tags:['质疑老师','理念不合','顶撞被逐']},
  {l1:'出师',tags:['出师考核','门派刁难','自立门户']},
@@ -71,44 +71,44 @@ let DOMAINS=[
  {l1:'贪欲',tags:['越要越多','为此失去更重要的','回不了头']},
  {l1:'舍得',tags:['主动放手','得之我幸','转身离开']},
  {l1:'他人之失',tags:['对手跌下神坛','看笑话','忍住没笑']}],},
-{id:'gongping',name:'公平',modes:['story'],tree:[
+{id:'gongping',name:'公平',modes:['story','music','video'],tree:[
  {l1:'委屈',tags:['被抢功劳','被诬陷','弱者被欺压']},
  {l1:'隐忍',tags:['不敢声张','生计所迫','忍气吞声']},
  {l1:'绝路',tags:['投诉被踢皮球','没人信','证据被毁']},
  {l1:'抗争',tags:['收集证据','孤身申诉','公开发声']},
  {l1:'昭雪',tags:['真相大白','迟到的道歉','恶人伏法']},
  {l1:'宽恕',tags:['原谅','不原谅','算了']}],},
-{id:'zhongcheng',name:'信任',modes:['story'],tree:[
+{id:'zhongcheng',name:'信任',modes:['story','music','video'],tree:[
  {l1:'托付',tags:['托孤','交底牌','把后背交出去']},
  {l1:'试探',tags:['考验','设局','半信半疑']},
  {l1:'出卖',tags:['被出卖','证据确凿','最信任的人捅刀']},
  {l1:'赎罪',tags:['弥补','自首','用余生偿还']},
  {l1:'重建',tags:['重新交心','第二次机会','破镜重圆']}],},
-{id:'enqing',name:'恩情',modes:['story'],tree:[
+{id:'enqing',name:'恩情',modes:['story','music','video'],tree:[
  {l1:'受恩',tags:['一饭之恩','雪中送炭','陌生人的善意']},
  {l1:'铭记',tags:['铭记于心','立志回报','信物珍藏']},
  {l1:'相报',tags:['涌泉相报','滴水之恩','成全对方']},
  {l1:'难报',tags:['恩情太重','对方已不在','无以为报']},
  {l1:'忘恩负义',tags:['反咬一口','以怨报德','寒心']}],},
-{id:'shengsi',name:'生死',modes:['story','music'],tree:[
+{id:'shengsi',name:'生死',modes:['story','music','video'],tree:[
  {l1:'死期',tags:['确诊通知书','倒计时','未完成的清单']},
  {l1:'临终',tags:['最后的话','放不下的人','交代后事']},
  {l1:'告别',tags:['没说出口','赶不到的航班','最后一面']},
  {l1:'身后',tags:['整理遗物','忌日','用他教的方式活着']},
  {l1:'遗志',tags:['遗愿有人接续','手艺传下去','替他看世界']}],},
-{id:'shijian',name:'岁月',modes:['story','music'],tree:[
+{id:'shijian',name:'岁月',modes:['story','music','video'],tree:[
  {l1:'失之交臂',tags:['差一步','错身的时机','来晚一步']},
  {l1:'迟到',tags:['迟到的信','多年后才知道','真相来得太晚']},
  {l1:'物是人非',tags:['故地重游','老店关门','旧歌响起']},
  {l1:'回不去',tags:['拆掉的旧居','变味的关系','童年不再']},
  {l1:'新生',tags:['新的起点','旧瓶装新酒','下一代的故事']}],},
-{id:'guxiang',name:'家乡',modes:['story','music'],tree:[
+{id:'guxiang',name:'家乡',modes:['story','music','video'],tree:[
  {l1:'离乡',tags:['车站送别','行囊','回望']},
  {l1:'乡愁',tags:['方言','妈妈的味道','老屋的炊烟']},
  {l1:'返乡',tags:['近乡情怯','老屋塌了','发小认不出']},
  {l1:'漂泊',tags:['融不进的城市','回不去的家乡','两头都不属于']},
  {l1:'归根',tags:['落叶归根','回乡创业','把孩子接回老家']}],},
-{id:'jinqian',name:'金钱',modes:['story'],tree:[
+{id:'jinqian',name:'金钱',modes:['story','music','video'],tree:[
  {l1:'窘迫',tags:['缴费单前','开口借钱','装出来的体面']}, {l1:'被看轻的日子',tags:['看人下菜碟','被当面奚落','聚会上的座次','翻身后的态度转变']},
 
  {l1:'转机',tags:['一笔横财的消息','贵人出现','孤注一掷']},
@@ -116,27 +116,27 @@ let DOMAINS=[
  {l1:'人心',tags:['借钱见人心','锦上添花易','分钱散伙']},
  {l1:'落魄',tags:['破产','从简','旧友冷眼']},
  {l1:'知足',tags:['粗茶淡饭','够用就好','家人才是财富']}],},
-{id:'gudu',name:'孤独',modes:['story','music'],tree:[
+{id:'gudu',name:'孤独',modes:['story','music','video'],tree:[
  {l1:'寂寞',tags:['一个人的节日','空荡的房间','无人分享的好消息']},
  {l1:'误解',tags:['话到嘴边','鸡同鸭讲','微笑面具']},
  {l1:'独处',tags:['独处之乐','一个人的仪式感','与自己和解']},
  {l1:'暖意',tags:['深夜一碗面','陌生人的善意','宠物的迎接']},
  {l1:'守护',tags:['老狗的最后时光','陪床的灯','最后一段路']}],},
-{id:'shenfen',name:'脸面',modes:['story'],tree:[
+{id:'shenfen',name:'脸面',modes:['story','music','video'],tree:[
  {l1:'困惑',tags:['我是谁','从何而来','镜中的陌生人']},
  {l1:'伪装',tags:['隐姓埋名','双重身份','怕被认出']},
  {l1:'暴露',tags:['身世揭晓','马甲掉落','故人一句话']},
  {l1:'白眼',tags:['格格不入','出身被歧视','另类']}, {l1:'尊严与屈辱',tags:['当众被羞辱','低声下气求人','守住最后的体面','替家人扛下难堪','痛点被当众戳破']},
 
  {l1:'接纳',tags:['承认真实的自己','与过去和解','不再需要认可']}],},
-{id:'jinzheng',name:'输赢',modes:['story'],tree:[
+{id:'jinzheng',name:'输赢',modes:['story','music','video'],tree:[
  {l1:'备战',tags:['十年磨一剑','封闭训练','立军令状']},
  {l1:'对决',tags:['巅峰之战','狭路相逢','最后一球']},
  {l1:'惜败',tags:['只差一分','遗憾离场','误判']},
  {l1:'虽败犹荣',tags:['拼尽全力','赢得尊重','没有遗憾']},
  {l1:'宿敌',tags:['惺惺相惜','一辈子的对手','英雄惜英雄']},
  {l1:'释然',tags:['输赢之外','放下胜负','传给后辈']}],},
-{id:'jiaguo',name:'家国',modes:['story'],tree:[
+{id:'jiaguo',name:'家国',modes:['story','music','video'],tree:[
  {l1:'离散',tags:['战乱分离','两岸相隔','迁徙路上']},
  {l1:'坚守',tags:['大时代小人物','守一盏灯','岗位上的坚持']},
  {l1:'奉献',tags:['舍小家','前线与后方','隐姓埋名的贡献']},
@@ -921,18 +921,21 @@ const saveWB=o=>{if(cloudOn())SMCloud.saveWB(o);else localStorage.setItem(WB_KEY
 const wbNewId=()=>'w'+Date.now().toString(36)+Math.floor(Math.random()*999);
 const wbNew=kind=>{
   if(kind==='novel')return{id:wbNewId(),name:'未命名小说',outline:'',rules:'',world:'',chars:[],chapters:[{t:'第一章',c:''}],cur:0,src:null};
-  if(kind==='music')return{id:wbNewId(),name:'未命名歌曲',theme:'',story:'',structure:WB.music.structs[0].tpl,inst:[],style:[],mood:[],melody:'',src:null};
+  if(kind==='music')return{id:wbNewId(),name:'未命名歌曲',theme:'',story:'',structure:WB.music.structs[0].tpl,inst:[],style:[],mood:[],vocal:'',melody:'',src:null};
   return{id:wbNewId(),name:'未命名视频',theme:'',story:'',shots:[{jing:'中景',scene:'',line:'',dur:3}],src:null};
 };
 /* 把当前配方送进工作台：建项目 → 存 → 返回跳转链接 */
-function sendPFToWB(pf,kind,name){
+function sendPFToWB(pf,kind,name,xtra){
   if(!pf||!pf.length)throw new Error('配方篮是空的');
   const wb=loadWB();
   const p=wbNew(kind);
   p.src=pf.slice();
   p.name=(name||'').trim()||autoName(pf,kind);
-  if(kind==='novel')p.outline='【灵感配方】'+(pfText(pf));
-  else if(kind==='music')p.theme=pfOutText(pf,'music');
+  if(kind==='music'){ /* 创建时可带入风格维度（对齐 Suno 提示词结构：流派/氛围/乐器/人声） */
+    if(xtra){p.mood=xtra.mood||p.mood;p.style=xtra.style||p.style;p.inst=xtra.inst||p.inst;p.vocal=xtra.vocal||p.vocal;}
+    p.theme=pfOutText(pf,'music');
+  }
+  else if(kind==='novel')p.outline='【灵感配方】'+(pfText(pf));
   else{p.theme=pfOutText(pf,'video');p.story='';}
   wb[kind+'s'].unshift(p);
   saveWB(wb);
@@ -945,11 +948,13 @@ function autoName(pf,kind){
 }
 
 /* 配方所属模式：由内容推断（视角/金句→音乐，钩子→短视频，其余→故事） */
-function pfInferMode(pf){
+function pfInferMode(pf){ /* 内容推断仅作无锁兜底：视角/金句=音乐，钩子=短视频；平票归音乐 */
   const v=(pf||[]).filter(x=>x.cat==='view'||x.cat==='line').length;
   const h=(pf||[]).filter(x=>x.cat==='hook').length;
+  const s=(pf||[]).filter(x=>x.cat==='endhook').length;
+  if(s>0&&v<2)return'story'; /* 结尾钩子=故事强信号 */
+  if(v>0&&v>=h)return'music';
   if(h>v)return'video';
-  if(v>0)return'music';
   return'story';
 }
 const PF_TO_WB={story:'novel',music:'music',video:'video'};
@@ -1024,7 +1029,7 @@ function pfAdd(item){
 function pfRemove(cat,tag){savePF(loadPF().filter(x=>!(x.cat===cat&&x.tag===tag)));}
 function pfClear(){savePF([]);}
 
-const CAT_NAME={sit:'情境',rel:'人物关系',scene:'故事场景',mod:'转折',view:'视角',line:'金句方向',hook:'钩子'};
+const CAT_NAME={sit:'情境',rel:'人物关系',scene:'故事场景',mod:'转折',view:'视角',line:'金句方向',hook:'钩子',endhook:'结尾钩子'};
 function pfText(a=loadPF()){
   const seg=a.map(x=>x.cat==='sit'?x.dom+'·'+x.tag:x.tag);
   return seg.join(' × ');
@@ -1036,6 +1041,7 @@ const MODE_NAME={story:'故事',music:'音乐',video:'短视频'};
 const MODE_SUB={story:'短剧 / 小说选题',music:'歌曲主题与方向',video:'短视频钩子与结构'};
 /* 模式专属小池：内置，随模式参与碰撞 */
 const POOLS={
+ endhook:['悬念未解','新危机浮现','反转余波','情感未了','秘密初露','选择路口','时间跳跃','预言'],
   view:['我','你','TA','我们','旁观者'],
   line:['口是心非','后知后觉','欲言又止','假装释怀','词不达意','来不及说'],
   hook:['痛点直击','结果前置','反常识断言','身份反差','悬念前置','具体数字开场','冲突前置','时间倒计时']
@@ -1043,6 +1049,7 @@ const POOLS={
 const VIEW_LIST=POOLS.view.map(t=>({tag:t,dom:''}));
 const LINE_LIST=POOLS.line.map(t=>({tag:t,dom:''}));
 const HOOK_LIST=POOLS.hook.map(t=>({tag:t,dom:''}));
+const ENDHOOK_LIST=POOLS.endhook.map(t=>({tag:t,dom:''}));
 function getMode(){const m=localStorage.getItem('sm_mode');return MODES.includes(m)?m:'story';}
 function setMode(m){if(MODES.includes(m))localStorage.setItem('sm_mode',m);}
 /* ---------- 今日配方：按日期固定种子，三种模式各一条 ---------- */
@@ -1067,31 +1074,51 @@ const WB={
     insts:['钢琴','木吉他','电吉他','贝斯','鼓组','弦乐','合成器','民乐','口琴','和声'],
     styles:['流行','民谣','摇滚','R&B','古风','电子','说唱','爵士','国风'],
     moods:['治愈','感伤','热血','慵懒','复古','梦幻','燃','安静','迷幻','史诗']
+    ,vocals:['男声','女声','对唱','说唱','哼唱','合唱']
   },
   video:{jings:['远景','全景','中景','近景','特写']}
 };
 
 function pfOutText(a=loadPF(),mode){
   mode=mode||getMode();
-  if(mode==='story')return pfText(a);
+  if(mode==='story'){
+    /* 与音乐/短视频同规格：七个槽位，已选标「」，未选显示 ____ */
+    const by=c=>a.find(x=>x.cat===c);
+    const V=by('sit'),R=by('rel'),S=by('scene'),M=by('mod'),W=by('view'),H=by('hook'),E=by('endhook');
+    const slots=[
+      ['画面',V?V.dom+'·'+V.tag:null],
+      ['关系',R?R.tag:null],
+      ['场景',S?S.tag:null],
+      ['情节反转',M?M.tag:null],
+      ['叙事视角',W?W.tag:null],
+      ['开篇钩子',H?H.tag:null],
+      ['结尾钩子',E?E.tag:null]
+    ];
+    return slots.map(s=>s[0]+' '+(s[1]?'「'+s[1]+'」':'____')).join('，');
+  }
   const by=c=>a.find(x=>x.cat===c);
   if(mode==='music'){
     const R=by('rel'),M=by('mod'),S=by('scene'),V=by('sit');
     const W=a.filter(x=>x.cat==='view'),L=a.filter(x=>x.cat==='line'); // 视角/金句支持多选：情绪是复合的
+    const H=by('hook');
     const rows=[
       ['写给',R?'「'+R.tag+'」':'____'],
-      ['视角',W.length?W.map(x=>x.tag).join('、'):'____'],
+      ['歌词人称',W.length?W.map(x=>x.tag).join('、'):'____'],
       ['情绪落点',M?M.tag:'____'],
       ['核心画面',S?'「'+S.tag+'」':'____'],
-      ['金句方向',L.length?L.map(x=>x.tag).join('、'):'____']
+      ['副歌Hook句',L.length?L.map(x=>x.tag).join('、'):'____'],
+      ['歌名钩子',H?H.tag:'____']
     ];
     return '一首'+(V?'关于'+V.dom+'·「'+V.tag+'」的':'')+'歌：'+rows.map(r=>r[0]+' '+r[1]).join('，');
   }
   const H=by('hook'),S=by('scene'),V=by('sit'),R=by('rel'),M=by('mod');
+  const L=by('line'),W=by('view');
   const rows=[
-    ['钩子',H?H.tag:'____'],
+    ['前3秒钩子',H?H.tag:'____'],
     ['前3秒画面',S?'「'+S.tag+'」'+(V?'，'+V.tag:''):(V?V.dom+'·'+V.tag:'____')],
-    ['共鸣点',R?'「'+R.tag+'」':'____'],
+    ['人设共鸣',R?'「'+R.tag+'」':'____'],
+    ['旁白视角',W?W.tag:'____'],
+    ['反转台词',L?L.tag:'____'],
     ['结尾反转',M?M.tag:'____']
   ];
   return '短视频选题：'+rows.map(r=>r[0]+' '+r[1]).join('；');
@@ -1122,6 +1149,18 @@ function pfSentence(a=loadPF()){
   return (MOD_PATTERN[mod.tag]||'{C}，最终'+mod.tag+'。').replaceAll('{C}',core);
 }
 
+/* 方向×模式侧重表（行业实践：18 底层域全通，侧重=随机权重+排序；云端 tax 可带 fit 覆盖）★★★=3 主赛道 ★★=2 成熟品类 ★=1 细分少用 */
+const BASE_FIT={
+ aiqing:{music:3,video:3,story:3},qinqing:{music:3,video:3,story:3},
+ youqing:{music:3,video:2,story:2},shisheng:{music:2,video:2,story:2},
+ ziwo:{music:3,video:3,story:3},deshi:{music:2,video:3,story:3},
+ gongping:{music:2,video:2,story:3},zhongcheng:{music:3,video:3,story:3},
+ enqing:{music:2,video:2,story:2},shengsi:{music:3,video:2,story:3},
+ shijian:{music:3,video:2,story:2},guxiang:{music:3,video:3,story:2},
+ jinqian:{music:2,video:3,story:3},gudu:{music:3,video:2,story:2},
+ shenfen:{music:2,video:3,story:3},jinzheng:{music:2,video:2,story:2},
+ jiaguo:{music:3,video:2,story:2},ziran:{music:3,video:2,story:1}
+};
 /* 随机配方：锁单一方向取材，关系/场景按情境所属分类精确配套，转折按方向适配表并避开与情境同义者 */
 const MOD_FIT={
  aiqing:['背叛','和解','牺牲','亏欠','送别','重逢','错过','成全','救赎','报复'],
@@ -1163,9 +1202,15 @@ const MOD_EXCLUDE={
 /* 取样池 = 内置 + 用户自定义（按分类并入） */
 function poolRels(base){return RELS[base]||[];}
 function poolScenes(base){return SCENES[base]||[];}
+function pickDom(mode){ /* 侧重加权：★★★≈3/9、★★≈2/9、★≈1/9 */
+  const w=d=>Math.max(1,((d.fit||{})[mode])||2);
+  const tot=DOMAINS.reduce((a,d)=>a+w(d),0);let r=Math.random()*tot;
+  for(const d of DOMAINS){r-=w(d);if(r<0)return d;}
+  return DOMAINS[DOMAINS.length-1];
+}
 function randomPF(mode){
   const pick=arr=>arr[Math.floor(Math.random()*arr.length)];
-  const d=pick(DOMAINS);
+  const d=pickDom(mode);
   const sit=pick(flatSits(d));
   const base=sit.l1.split('·')[0];
   const out=[{cat:'sit',tag:sit.tag,dom:d.name}];
@@ -1180,17 +1225,23 @@ function randomPF(mode){
   const fit=baseFit.filter(m=>!ex.includes(m));
   const pool=fit.length?[...new Set(fit.concat(custom))]:MODIFIERS.filter(m=>!ex.includes(m));
   const m1=pick(pool);out.push({cat:'mod',tag:m1,dom:''});
-  if(mode==='music'){ // 音乐：转折词=情绪落点；视角与金句方向各抽 1~2 个（情绪是复合的）
+  if(mode==='music'){ // 音乐：mod=情绪落点；view=歌词人称、line=副歌hook句 各 1~2 个；hook=歌名钩子
     const nV=Math.random()<.55?2:1,nL=Math.random()<.55?2:1;
     [...new Set(Array.from({length:nV},()=>pick(POOLS.view)))].forEach(t=>out.push({cat:'view',tag:t,dom:''}));
     [...new Set(Array.from({length:nL},()=>pick(POOLS.line)))].forEach(t=>out.push({cat:'line',tag:t,dom:''}));
-    return out;
-  }
-  if(mode==='video'){ // 短视频：转折词=结尾反转，再碰撞钩子类型
     out.push({cat:'hook',tag:pick(POOLS.hook),dom:''});
     return out;
   }
+  if(mode==='video'){ // 短视频：mod=结尾反转 + hook=前3秒 + line=反转台词(50%) + view=旁白(35%)
+    out.push({cat:'hook',tag:pick(POOLS.hook),dom:''});
+    if(Math.random()<.5)out.push({cat:'line',tag:pick(POOLS.line),dom:''});
+    if(Math.random()<.35)out.push({cat:'view',tag:pick(POOLS.view),dom:''});
+    return out;
+  }
   if(Math.random()<.35){const m2=pick(pool);if(m2!==m1)out.push({cat:'mod',tag:m2,dom:''});}
+  if(Math.random()<.4)out.push({cat:'view',tag:pick(POOLS.view),dom:''});     // 叙事视角
+  if(Math.random()<.4)out.push({cat:'hook',tag:pick(POOLS.hook),dom:''});     // 开篇钩子
+  if(Math.random()<.45)out.push({cat:'endhook',tag:pick(POOLS.endhook),dom:''}); // 结尾钩子
   return out;
 }
 
@@ -1211,6 +1262,7 @@ const BUILTIN={
   rels:JSON.parse(JSON.stringify(RELS)),
   scenes:JSON.parse(JSON.stringify(SCENES)),
   mods:JSON.parse(JSON.stringify(MODIFIERS)),
+  pools:JSON.parse(JSON.stringify(POOLS)),
   sitSet:(()=>{const s=new Set();DOMAINS.forEach(d=>flatSits(d).forEach(x=>s.add(x.l1+'|'+x.tag)));return s;})(),
   catSet:new Set(Object.keys(RELS)),
   domSet:new Set(DOMAINS.map(d=>d.name))
@@ -1221,6 +1273,9 @@ function applyTax(){
   DOMAINS=JSON.parse(JSON.stringify(domSrc));
   const bm={};BUILTIN.doms.forEach(d=>bm[d.id]=d.modes);
   DOMAINS.forEach(d=>{if(!Array.isArray(d.modes)||!d.modes.length)d.modes=bm[d.id]||['story','music','video'];});
+  const BASE18=['aiqing','qinqing','youqing','shisheng','ziwo','deshi','gongping','zhongcheng','enqing','shengsi','shijian','guxiang','jinqian','gudu','shenfen','jinzheng','jiaguo','ziran'];
+  DOMAINS.forEach(d=>{if(BASE18.includes(d.id))d.modes=['story','music','video'];}); /* 行业实践：18 个基本经验域三种形态全通（如师生亦有海量歌曲/校园短剧），模式差异在转换器不在准入 */
+  DOMAINS.forEach(d=>{d.fit=d.fit||BASE_FIT[d.id]||{music:2,video:2,story:2};});
   L1_DOM={};DOMAINS.forEach(d=>d.tree.forEach(n=>L1_DOM[n.l1]=d.name));
   SITS.length=0;DOMAINS.forEach(d=>SITS.push(...flatSits(d)));
   const pairs=on?SMCloud.data.rels:(()=>{const o=[];Object.entries(BUILTIN.rels).forEach(([l1,a])=>a.forEach(t=>o.push({tag:t,l1})));return o;})();
@@ -1231,6 +1286,13 @@ function applyTax(){
   SCENE_LIST.length=0;SCENE_LIST.push(...flatScenes());
   const modSrc=(on&&Array.isArray(SMCloud.data.mods))?SMCloud.data.mods:BUILTIN.mods;
   MODIFIERS.length=0;MODIFIERS.push(...modSrc);
+  /* 模式池（视角/金句/钩子/结尾钩子）入云：云端为准，离线回退内置 */
+  const poolSrc=(on&&SMCloud.data.pools&&typeof SMCloud.data.pools==='object')?SMCloud.data.pools:BUILTIN.pools;
+  ['view','line','hook','endhook'].forEach(k=>{POOLS[k].length=0;POOLS[k].push(...(poolSrc[k]||BUILTIN.pools[k]));});
+  VIEW_LIST.length=0;VIEW_LIST.push(...POOLS.view.map(t=>({tag:t,dom:''})));
+  LINE_LIST.length=0;LINE_LIST.push(...POOLS.line.map(t=>({tag:t,dom:''})));
+  HOOK_LIST.length=0;HOOK_LIST.push(...POOLS.hook.map(t=>({tag:t,dom:''})));
+  ENDHOOK_LIST.length=0;ENDHOOK_LIST.push(...POOLS.endhook.map(t=>({tag:t,dom:''})));
   STATS.domains=DOMAINS.length;STATS.l1=DOMAINS.reduce((a,d)=>a+d.tree.length,0);
   STATS.tags=SITS.length;STATS.rel=REL_LIST.length;STATS.scene=SCENE_LIST.length;
   STATS.mod=MODIFIERS.length;
@@ -1241,4 +1303,5 @@ function isBuiltinSit(l1,tag){return BUILTIN.sitSet.has(l1+'|'+tag);}
 function isBuiltinRel(l1,tag){return (BUILTIN.rels[l1]||[]).includes(tag);}
 function isBuiltinScene(l1,tag){return (BUILTIN.scenes[l1]||[]).includes(tag);}
 function isBuiltinMod(tag){return BUILTIN.mods.includes(tag);}
+function isBuiltinPool(k,tag){return (BUILTIN.pools[k]||[]).includes(tag);}
 applyTax();

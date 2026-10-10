@@ -6,7 +6,7 @@
   <title>灵感组合 · 灵感工作台</title>
   <meta name="description" content="26个灵感方向（共情故事+热门类型）、490+个情境、690+组人物关系、490+个故事场景自由搭配，自定义关系与场景，数据存在你自己的 GitHub 私有仓库。">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237c3aed'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white'>叙</text></svg>">
-  <link rel="stylesheet" href="assets/style.css?v=20">
+  <link rel="stylesheet" href="assets/style.css?v=32">
 </head>
 <body>
 <div class="wrap">
@@ -34,29 +34,40 @@
   </section>
 </div>
 
-<script src="assets/data.js?v=20"></script>
-<script src="assets/common.js?v=20"></script>
-<script src="assets/cloud.js?v=20"></script>
+<script src="assets/data.js?v=32"></script>
+<script src="assets/common.js?v=32"></script>
+<script src="assets/cloud.js?v=32"></script>
 <script>
 initPage('studio.html');
 
-/* 各列按模式区分：视角/金句=音乐专属（可多选），钩子=短视频专属，其余三模式通用 */
-const mineList=kind=>SMCloud.data[kind==='rel'?'rels':'scenes']
-  .filter(x=>kind==='rel'?!isBuiltinRel(x.l1,x.tag):!isBuiltinScene(x.l1,x.tag))
-  .map(x=>({tag:x.tag,l1:x.l1,dom:L1_DOM[x.l1]||''}));
+/* 同一批底层数据，三种模式叫法不同（转换器命名）：列名/按钮随模式切换 */
+const MODE_TITLE={
+ music:{sit:['情境','歌词意象库'],rel:['人物关系','歌里的人物'],scene:['故事场景','歌词场景意象'],mod:['情绪落点','转折词在音乐里=情绪落点'],view:['歌词人称','我/你/TA…可多选'],line:['副歌Hook句','金句方向→副歌记忆点'],hook:['歌名钩子','钩子类型→歌名方向']},
+ video:{sit:['情境','一镜一个微画面'],rel:['人物关系','短剧人设组合'],scene:['故事场景','拍摄场景库'],mod:['结尾反转','转折词在视频里=结尾反转'],view:['叙事视角','谁在看这个故事'],line:['反转台词','金句方向→反转台词/字幕'],hook:['前三秒钩子','钩子类型→开场抓人']},
+ story:{sit:['情境','3~8 字微画面'],rel:['人物关系','谁与谁'],scene:['故事场景','场景卡'],mod:['情节反转','转折词在故事里=情节反转'],view:['叙事视角','视角池'],hook:['开篇钩子','钩子类型→开篇第一句'],endhook:['结尾钩子','章末/集末留钩'],}
+};
 const CAT_META=[
  {key:'sit', title:'情境', sub:'', dot:'#a78bfa', data:SITS, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true, modes:MODES},
  {key:'rel', title:'人物关系', sub:'', dot:'#38bdf8', data:REL_LIST, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true, modes:MODES},
  {key:'scene', title:'故事场景', sub:'', dot:'#34d399', data:SCENE_LIST, label:x=>x.tag, src:x=>x.dom+' · '+x.l1, filter:true, modes:MODES},
- {key:'mod', title:'转折', sub:'故事=情节反转 · 音乐=情绪落点 · 视频=结尾反转', dot:'#f0abfc', data:MODIFIERS.map(t=>({tag:t})), label:x=>x.tag, src:()=>'', filter:false, modes:MODES},
- {key:'view', title:'视角', sub:'音乐配方 · 可叠加多个', dot:'#c4b5fd', data:VIEW_LIST, label:x=>x.tag, src:()=>'', filter:true, modes:['music']},
- {key:'line', title:'金句方向', sub:'音乐配方 · 可叠加多个', dot:'#f9a8d4', data:LINE_LIST, label:x=>x.tag, src:()=>'', filter:true, modes:['music']},
- {key:'hook', title:'钩子', sub:'短视频配方 · 可叠加多个', dot:'#fdba74', data:HOOK_LIST, label:x=>x.tag, src:()=>'', filter:true, modes:['video']},
- {key:'myrel', title:'自定义人物关系', sub:'', dot:'#fbbf24', dataFn:()=>mineList('rel'), addKind:'rel', modes:MODES},
- {key:'myscene', title:'自定义故事场景', sub:'', dot:'#fbbf24', dataFn:()=>mineList('scene'), addKind:'scene', modes:MODES},
+ {key:'mod', title:'转折', sub:'', dot:'#f0abfc', data:MODIFIERS.map(t=>({tag:t})), label:x=>x.tag, src:()=>'', filter:false, modes:MODES},
+ {key:'view', title:'视角', sub:'', dot:'#c4b5fd', data:VIEW_LIST, label:x=>x.tag, src:()=>'', filter:true, modes:MODES},
+ {key:'line', title:'金句方向', sub:'', dot:'#f9a8d4', data:LINE_LIST, label:x=>x.tag, src:()=>'', filter:true, modes:['music','video']},
+ {key:'hook', title:'钩子', sub:'', dot:'#fdba74', data:HOOK_LIST, label:x=>x.tag, src:()=>'', filter:true, modes:MODES},
+ {key:'endhook', title:'结尾钩子', sub:'', dot:'#fbbf24', data:ENDHOOK_LIST, label:x=>x.tag, src:()=>'', filter:true, modes:['story']},
 ];
 const catOf=k=>(k==='myrel'?'rel':k==='myscene'?'scene':k);
-const modeCols=()=>CAT_META.filter(m=>(m.modes||MODES).includes(getMode()));
+/* 池列展示名（随当前模式）：view/line/hook/endhook */
+const poolTitle=k=>{const mt=MODE_TITLE[getMode()]||{};return (mt[k]||[])[0]||CAT_NAME[k]||k;};
+/* 同一数据源，但三个模式各自钦定的列顺序不同：故事=反转·视角·开篇钩·结尾钩；音乐=落点·人称·副歌句·歌名钩；短视频=反转·视角·前3秒钩·反转台词 */
+const MODE_COL_ORDER={
+ story:['sit','rel','scene','mod','view','hook','endhook'],
+ music:['sit','rel','scene','mod','view','line','hook'],
+ video:['sit','rel','scene','mod','view','hook','line'],
+};
+const modeCols=()=>{const ord=MODE_COL_ORDER[getMode()]||CAT_META.map(m=>m.key);
+ return CAT_META.filter(m=>(m.modes||MODES).includes(getMode()))
+  .sort((a,b)=>ord.indexOf(a.key)-ord.indexOf(b.key));};
 
 /* ---------- 配方模式切换 ---------- */
 function paintTabs(){
@@ -74,18 +85,23 @@ $('#modeTabs').addEventListener('click',e=>{
 });
 
 function renderCols(){
-  $('#cols').innerHTML=modeCols().map(m=>`
+  const mt=MODE_TITLE[getMode()]||{};
+  $('#cols').innerHTML=modeCols().map(m=>{
+   const mtit=mt[m.key]||[m.title,m.sub];
+   return `
    <div class="col-panel rise" data-key="${m.key}">
-     <div class="col-head"><h3><span class="dot" style="background:${m.dot};box-shadow:0 0 10px ${m.dot}"></span>${m.title}
-       <span class="col-count" id="cnt-${m.key}"></span></h3><div class="sub">${m.sub}</div></div>
+     <div class="col-head"><h3><span class="dot" style="background:${m.dot};box-shadow:0 0 10px ${m.dot}"></span>${mtit[0]}
+       <span class="col-count" id="cnt-${m.key}"></span></h3><div class="sub">${mtit[1]||''}</div></div>
      ${m.addKind?`<button class="col-add rip" data-add="${m.addKind}">＋ 添加</button>`:''}
-     ${m.key==='mod'?`<button class="col-add rip" data-addmod>＋ 添加转折词</button>`:''}
+     ${m.key==='mod'?`<button class="col-add rip" data-addmod>＋ 添加${mtit[0]}</button>`:''}
+     ${['view','line','hook','endhook'].includes(m.key)?`<button class="col-add rip" data-addpool="${m.key}">＋ 添加${mtit[0]}</button>`:''}
      ${m.filter?`<div class="col-filter">
        <input id="q-${m.key}" placeholder="筛选…">
-       ${m.key==='sit'?`<select id="domFilter"><option value="">全部</option>${DOMAINS.map(d=>`<option>${d.name}</option>`).join('')}</select>`:''}
+       ${m.key==='sit'?`<select id="domFilter"><option value="">全部</option>${[...DOMAINS].sort((a,b)=>(((b.fit||{})[getMode()])||2)-(((a.fit||{})[getMode()])||2)).map(d=>{const n=((d.fit||{})[getMode()])||2;return `<option value="${d.name}">${d.name}${'●'.repeat(n)}${'○'.repeat(3-n)}</option>`}).join('')}</select>`:''}
      </div>`:''}
      <div class="col-cloud" id="cloud-${m.key}"></div>
-   </div>`).join('');
+   </div>`;
+  }).join('');
   stagger();
   paintAll();
 }
@@ -106,17 +122,30 @@ function paintCol(key){
   const pf=loadPF();
   const src=m.key==='mod'?MODIFIERS.map(t=>({tag:t})):(m.dataFn?m.dataFn():m.data);
   const real=catOf(key);
-  const list=src.filter(x=>(!q||x.tag.includes(q)||(x.dom||'').includes(q)||(x.l1||'').includes(q))&&(!df||!x.dom||x.dom===df));
+  const mode=getMode();
+  const wOf=x=>{const d=DOMAINS.find(d=>d.name===x.dom);return (((d&&d.fit)||{})[mode])||2;}; /* 无方向归属的按中档 */
+  const filtered=src.filter(x=>(!q||x.tag.includes(q)||(x.dom||'').includes(q)||(x.l1||'').includes(q))&&(!df||!x.dom||x.dom===df));
+  /* 按当前模式侧重分档（★★★>★★>★），同档内各方向轮转穿插，避免大方向霸屏 */
+  const buckets={};filtered.forEach(x=>{const w=wOf(x);(buckets[w]=buckets[w]||[]).push(x);});
+  const list=[];
+  Object.keys(buckets).map(Number).sort((a,b)=>b-a).forEach(w=>{
+    const byDom={};buckets[w].forEach(x=>{const k=x.dom||'';(byDom[k]=byDom[k]||[]).push(x);});
+    const doms=Object.keys(byDom);let i=0,left=buckets[w].length;
+    while(left>0){const it=byDom[doms[i++%doms.length]].shift();if(it){list.push(it);left--;}}
+  });
   cntEl.textContent='显示 '+list.length+' / '+src.length;
   cloudEl.innerHTML=list.map(x=>{
     const inPf=pf.some(p=>p.cat===real&&p.tag===x.tag&&(real!=='sit'||p.dom===x.dom));
     if(m.addKind)return `<span class="chip mine ${inPf?'have':''}" data-k="${key}" data-t="${esc(x.tag)}" data-d="${x.dom||''}">
       <span class="plus">+</span>${esc(x.tag)} <span class="src">${esc(x.l1)}</span><span class="mine-tag">自定义</span><button class="mine-del" data-del="${encodeURIComponent(x.tag)}‖${encodeURIComponent(x.l1)}" title="删除">×</button></span>`;
-    const custom=key==='mod'&&!isBuiltinMod(x.tag);
+    const custom=(key==='mod'&&!isBuiltinMod(x.tag))||(['view','line','hook','endhook'].includes(key)&&!isBuiltinPool(key,x.tag));
     const crud=key==='mod'?`<span class="crud">
         <button data-em="${encodeURIComponent(x.tag)}" title="重命名转折词">✎</button>
         <button data-dm="${encodeURIComponent(x.tag)}" class="del" title="删除转折词">✕</button>
-      </span>`:'';
+      </span>`:(['view','line','hook','endhook'].includes(key)?`<span class="crud">
+        <button data-ep="${key}" data-t="${encodeURIComponent(x.tag)}" title="重命名">✎</button>
+        <button data-dp="${key}" data-t="${encodeURIComponent(x.tag)}" class="del" title="删除">✕</button>
+      </span>`:'');
     return `<span class="chip ${key==='mod'?'mod':''} ${custom?'mine':''} ${inPf?'have':''}" data-k="${key}" data-t="${esc(x.tag)}" data-d="${x.dom||''}">
       <span class="plus">+</span>${esc(m.label(x))}${custom?'<span class="mine-tag">自定义</span>':''}${m.src(x)?` <span class="src">${esc(m.src(x))}</span>`:''}${crud}</span>`;
   }).join('')||`<div class="empty-hint">${m.addKind||m.key==='mod'?'还没有，点上方「添加」创建':'无匹配'}</div>`;
@@ -144,6 +173,39 @@ $('#cols').addEventListener('click',async e=>{
       body:`<label class="sm-field"><span>转折词</span><input id="smIn" maxlength="8" placeholder="例如：坦白、诀别、反杀…" autocomplete="off"></label>`,
       onOk:m=>{const v=m.querySelector('#smIn').value.trim();if(!v)return false;SMCloud.addMod(v);toast('已添加，随机配方会用到它');}
     });
+    return;
+  }
+  /* 模式池：新增 / 重命名 / 删除（视角/金句/钩子/结尾钩子，与灵感方向同一数据源） */
+  const ap=e.target.closest('[data-addpool]');
+  if(ap){
+    const k=ap.dataset.addpool;
+    if(!(await SMCloud.ensureConnected()))return toast('请先连接存储（右上角「存储」）');
+    SMCloud.openModal({
+      title:'添加'+poolTitle(k),okText:'添加',
+      body:`<label class="sm-field"><span>名称</span><input id="smIn" maxlength="12" placeholder="例如：记忆闪回、第二人称…" autocomplete="off"></label>`,
+      onOk:m=>{const v=m.querySelector('#smIn').value.trim();if(!v)return false;SMCloud.addPool(k,v);toast('已添加');}
+    });
+    return;
+  }
+  const ep=e.target.closest('[data-ep]'),dp=e.target.closest('[data-dp]');
+  if(ep||dp){
+    e.stopPropagation();
+    if(!(await SMCloud.ensureConnected()))return toast('请先连接存储（右上角「存储」）');
+    if(ep){
+      const k=ep.dataset.ep,oldT=decodeURIComponent(ep.dataset.t);
+      SMCloud.openModal({
+        title:'重命名'+poolTitle(k),okText:'保存',
+        body:`<label class="sm-field"><span>名称</span><input id="smIn" value="${esc(oldT)}" maxlength="12" autocomplete="off"></label>`,
+        onOk:m=>{const v=m.querySelector('#smIn').value.trim();if(!v||v===oldT)return false;SMCloud.renamePool(k,oldT,v);toast('已改名');}
+      });
+    }else{
+      const k=dp.dataset.dp,t=decodeURIComponent(dp.dataset.t);
+      SMCloud.openModal({
+        title:'删除'+poolTitle(k),okText:'确认删除',
+        body:`<p class="sm-tip">将永久删除「<b>${esc(t)}</b>」。此操作不可恢复。</p>`,
+        onOk:()=>{SMCloud.delPool(k,t);toast('已删除');}
+      });
+    }
     return;
   }
   /* 转折词：重命名 / 删除 */

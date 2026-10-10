@@ -103,7 +103,9 @@ async function copyText(s,msg){
 }
 
 /* ---------- 配方托盘 ---------- */
+let dockModeFn=null; /* 配方篮模式取数器：灵感组合页=全局 getMode；灵感方向页=页面模式 getDMode */
 function buildDock(lockFn){ /* lockFn：返回锁定的模式名（如 getMode），托盘去创作同样只允许该模式 */
+  dockModeFn=lockFn;
   const d=document.createElement('div');d.className='dock';d.id='dock';
   d.innerHTML=`<div class="dock-head"><b>当前配方</b><span class="cnt" id="dockCnt"></span></div>
     <div class="dock-items" id="dockItems"></div>
@@ -123,14 +125,22 @@ function buildDock(lockFn){ /* lockFn：返回锁定的模式名（如 getMode�
       wbSendModal(pf,null,lockFn?lockFn():null); // 无锁时按配方内容推断，可选其他类型
     }
     if(e.target.closest('#dockClear')){
-      if(inWB()){curProj().src=[];commit();renderDock();}
-      else{pfClear();renderDock();}
+      if(inWB()){curProj().src=[];commit();}
+      else pfClear();
+      renderDock();
+      /* 清空后必须把页面上已选标签的选中态释放，否则无法再次点选（issue：清空不等于解锁） */
+      if(typeof paintAll==='function')paintAll();
+      if(typeof renderDockStates==='function')renderDockStates();
       toast('已清空');
     }
     const rm=e.target.closest('[data-rm]');
     if(rm){const [c,t]=rm.dataset.rm.split('||');
-      if(inWB()){const p=curProj();p.src=(p.src||[]).filter(x=>!(x.cat===c&&x.tag===t));commit();renderDock();}
-      else{pfRemove(c,t);renderDock();}
+      if(inWB()){const p=curProj();p.src=(p.src||[]).filter(x=>!(x.cat===c&&x.tag===t));commit();}
+      else pfRemove(c,t);
+      renderDock();
+      /* 移除后同步释放页面对应标签的选中态 */
+      if(typeof paintAll==='function')paintAll();
+      if(typeof renderDockStates==='function')renderDockStates();
     }
   });
 }
@@ -139,7 +149,7 @@ const WB_TO_MODE={novel:'story',music:'music',video:'video'};
 const inWB=()=>{try{return !!cur&&typeof curProj==='function'&&!!curProj();}catch(_){return false;}}; /* TDZ：页面脚本未执行完时安全回退 */
 function dockSrc(){
   if(inWB()){const p=curProj();return{items:p.src||[],mode:WB_TO_MODE[cur.kind]||getMode()};}
-  return{items:loadPF(),mode:getMode()};
+  return{items:loadPF(),mode:(dockModeFn||getMode)()};
 }
 function renderDock(){
   const d=$('#dock');if(!d)return;
@@ -148,8 +158,14 @@ function renderDock(){
   const toWB=$('#dockToWB');if(toWB)toWB.style.display=wb?'none':'';
   d.classList.toggle('show',a.length>0);
   $('#dockCnt').textContent=a.length?a.length+' 个元素 · 点击 × 移除':'';
+  /* 配方篮标签随模式改名：同一批底层数据，三模式叫法不同（与灵感方向列一致） */
+  const POOL_TITLES={
+    story:{mod:'情节反转',view:'叙事视角',hook:'开篇钩子',endhook:'结尾钩子',line:''},
+    music:{mod:'情绪落点',view:'歌词人称',hook:'歌名钩子',line:'副歌Hook句',endhook:''},
+    video:{mod:'结尾反转',view:'叙事视角',hook:'前三秒钩子',line:'反转台词',endhook:''},
+  };
   $('#dockItems').innerHTML=a.map(x=>
-    `<span class="dk"><span class="c">${CAT_NAME[x.cat]}</span>${x.cat==='sit'?x.dom+'·'+x.tag:x.tag}<button data-rm="${x.cat}||${x.tag}">×</button></span>`
+    `<span class="dk"><span class="c">${(POOL_TITLES[mode]||{})[x.cat]||CAT_NAME[x.cat]}</span>${x.cat==='sit'?x.dom+'·'+x.tag:x.tag}<button data-rm="${x.cat}||${x.tag}">×</button></span>`
   ).join('');
   const f=$('#dockFormula');
   if(a.length>1){f.textContent=MODE_NAME[mode]+'公式：'+pfOutText(a,mode);f.classList.add('show');}
@@ -228,9 +244,9 @@ function magnetic(){
 }
 
 /* ---------- 页面初始化 ---------- */
-function initPage(active,withDock=true){
+function initPage(active,withDock=true,modeFn){ /* modeFn：配方篮模式取数器，默认全局 getMode；灵感方向页传 getDMode */
   buildBg();buildNav(active);buildFooter();
-  if(withDock){buildDock(active==='studio.html'?getMode:null);renderDock();}
+  if(withDock){buildDock(modeFn||getMode);renderDock();} /* dock 去创作一律按当前模式锁定（模式存于 localStorage，跨页一致） */
   magnetic();stagger();
   if(location.hash==='#random'&&active==='studio.html'){setTimeout(()=>{doRandom?doRandom():0;history.replaceState(null,'','studio.html');},300);}
 }

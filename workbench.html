@@ -6,7 +6,7 @@
 <title>创作工作台 · 灵感工作台</title>
 <meta name="description" content="小说、音乐、短视频三模块创作工作台：分章写作、大纲世界观、音乐结构风格、分镜脚本，数据存在你自己的 GitHub 私有仓库。">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%237c3aed'/><text x='50' y='68' font-size='52' text-anchor='middle' fill='white'>叙</text></svg>">
-<link rel="stylesheet" href="assets/style.css?v=20">
+<link rel="stylesheet" href="assets/style.css?v=32">
 <style>
 /* 工作台专属 */
 .wb-tabs{display:flex;gap:10px;margin-top:26px;flex-wrap:wrap}
@@ -81,9 +81,9 @@
   </div>
 </div>
 
-<script src="assets/data.js?v=20"></script>
-<script src="assets/common.js?v=20"></script>
-<script src="assets/cloud.js?v=20"></script>
+<script src="assets/data.js?v=32"></script>
+<script src="assets/common.js?v=32"></script>
+<script src="assets/cloud.js?v=32"></script>
 <script>
 initPage('workbench.html');
 
@@ -230,6 +230,7 @@ function musicHTML(p){
   ${field('乐器配置（点选）',`<div class="wb-chips" id="m-inst">${WB.music.insts.map(t=>`<span class="chip rip ${p.inst.includes(t)?'on':''}" data-inst="${esc(t)}">${esc(t)}</span>`).join('')}</div>`)}
   ${field('流派（点选）',`<div class="wb-chips" id="m-style">${WB.music.styles.map(t=>`<span class="chip rip ${(p.style||[]).includes(t)?'on':''}" data-style="${esc(t)}">${esc(t)}</span>`).join('')}</div>`)}
   ${field('氛围（点选）',`<div class="wb-chips" id="m-mood">${WB.music.moods.map(t=>`<span class="chip rip ${(p.mood||[]).includes(t)?'on':''}" data-mood="${esc(t)}">${esc(t)}</span>`).join('')}</div>`)}
+  ${field('人声（点选）',`<div class="wb-chips" id="m-vocal">${WB.music.vocals.map(t=>`<span class="chip rip ${p.vocal===t?'on':''}" data-vocal="${esc(t)}">${esc(t)}</span>`).join('')}</div>`)}
   `;
 }
 
@@ -286,7 +287,7 @@ function bindEditor(p){
   /* 衍生创建：以本项目为底，生成另一类型项目；缺的模式专属标签由人选定后带入 */
   document.querySelector('[data-spawn]').addEventListener('click',()=>{
     const others=Object.keys(WB_KINDS).filter(k=>k!==cur.kind);
-    const NEEDED={music:[['view','视角'],[ 'line','金句方向']],video:[['hook','钩子']]};
+    const NEEDED={music:[['view','歌词人称'],['line','副歌Hook句'],['hook','歌名钩子']],video:[['hook','前三秒钩子'],['line','反转台词'],['view','叙事视角']],novel:[['hook','开篇钩子'],['endhook','结尾钩子'],['view','叙事视角']]};
     SMCloud.openModal({
       title:'以此项目新建',
       okText:'创建并切换',
@@ -379,6 +380,11 @@ function bindMusic(p){
     const t=c.dataset.mood;let i=p.mood.indexOf(t);
     if(i>=0)p.mood.splice(i,1);else p.mood.push(t);
     c.classList.toggle('on');scheduleSave();});
+  $('#m-vocal').addEventListener('click',e=>{ /* 人声：单选 */
+    const c=e.target.closest('[data-vocal]');if(!c)return;
+    p.vocal=(p.vocal===c.dataset.vocal)?'':c.dataset.vocal;
+    document.querySelectorAll('#m-vocal .chip').forEach(x=>x.classList.toggle('on',x.dataset.vocal===p.vocal));
+    scheduleSave();});
 }
 function bindVideo(p){
   $('#v-theme').addEventListener('input',e=>{p.theme=e.target.value;scheduleSave();});
